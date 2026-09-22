@@ -1,0 +1,30 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.clickable {
+  transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease),
+    background var(--fast) var(--ease);
+}
+
+.clickable:hover {
+  border-color: var(--sky);
+  color: var(--sky-deep);
+  background: rgba(129, 166, 198, 0.08);
+}
+
+.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}

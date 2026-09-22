@@ -1,0 +1,32 @@
+.wrap {
+  text-align: center;
+  padding: 56px 24px;
+  border-radius: var(--r-lg);
+  background: var(--danger-bg);
+  border: 1px solid rgba(189, 101, 82, 0.25);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+
+.desc {
+  max-width: 40ch;
+  margin: 0 auto 20px;
+  font-size: 0.92rem;
+}

@@ -1,0 +1,88 @@
+.flow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.node {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  flex: 1;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--med) var(--ease), box-shadow var(--med) var(--ease);
+}
+
+.node:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.iconWrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-md);
+  background: var(--sand);
+  color: var(--sky-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.name {
+  font-size: 1.02rem;
+  margin: 0 0 6px;
+}
+
+.desc {
+  font-size: 0.86rem;
+  margin: 0;
+}
+
+.connector {
+  flex-shrink: 0;
+  width: 28px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--clay-deep) 0 6px, transparent 6px 11px);
+  margin: 0 2px;
+  align-self: center;
+}
+
+.compact .node {
+  padding: 16px;
+}
+
+.compact .iconWrap {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 10px;
+}
+
+.compact .name {
+  font-size: 0.88rem;
+}
+
+@media (max-width: 860px) {
+  .flow {
+    flex-direction: column;
+  }
+  .step {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .connector {
+    width: 2px;
+    height: 24px;
+    margin: 4px auto;
+    background: repeating-linear-gradient(180deg, var(--clay-deep) 0 6px, transparent 6px 11px);
+  }
+}

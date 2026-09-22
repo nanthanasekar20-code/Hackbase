@@ -1,0 +1,59 @@
+:root {
+  /* ---- Brand palette (given) ---- */
+  --sky: #81a6c6;
+  --sky-light: #aacddc;
+  --sand: #f3e3d0;
+  --clay: #d2c4b4;
+
+  /* ---- Derived brand shades ---- */
+  --sky-dark: #5c84a8;
+  --sky-deep: #3f6483;
+  --sand-deep: #e9d1b3;
+  --clay-deep: #b9a690;
+
+  /* ---- Neutrals (warm, not stark) ---- */
+  --ink: #232733;
+  --ink-soft: #565b6b;
+  --ink-faint: #8b8f9c;
+  --paper: #fdfbf8;
+  --surface: #ffffff;
+  --surface-sunken: #f7f2ea;
+  --border: #e8ded0;
+  --border-strong: #d8cbb8;
+
+  /* ---- Functional accents (muted, palette-consistent) ---- */
+  --success: #6f9c7d;
+  --success-bg: #e9f1e7;
+  --warning: #c99a52;
+  --warning-bg: #f7ecd9;
+  --danger: #bd6552;
+  --danger-bg: #f8e8e3;
+
+  /* ---- Typography ---- */
+  /* Source Serif 4 / Source Sans 3 / Source Code Pro — Adobe's Source
+     superfamily, designed as a matched trio (shared proportions/x-height)
+     rather than three unrelated typefaces paired after the fact. */
+  --font-display: "Source Serif 4", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --font-mono: "Source Code Pro", ui-monospace, monospace;
+
+  /* ---- Radii ---- */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  /* ---- Shadows ---- */
+  --shadow-sm: 0 1px 2px rgba(35, 39, 51, 0.05);
+  --shadow-md: 0 6px 20px -6px rgba(35, 39, 51, 0.14);
+  --shadow-lg: 0 16px 40px -12px rgba(35, 39, 51, 0.22);
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --fast: 140ms;
+  --med: 220ms;
+
+  /* ---- Layout ---- */
+  --container: 1180px;
+  --nav-h: 72px;
+}

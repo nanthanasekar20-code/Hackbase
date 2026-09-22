@@ -1,0 +1,30 @@
+.section {
+  margin: 28px 0 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.sectionTitle {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.sectionDesc {
+  margin: 0 0 16px;
+  font-size: 0.85rem;
+}
+
+.success {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: var(--success-bg);
+  color: var(--success);
+  font-size: 0.86rem;
+}
+
+.meta {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}

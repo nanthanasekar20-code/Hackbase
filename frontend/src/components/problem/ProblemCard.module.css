@@ -1,0 +1,55 @@
+.card {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.title {
+  font-size: 1.14rem;
+  margin: 0;
+  line-height: 1.28;
+}
+
+.summary {
+  font-size: 0.9rem;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chips span {
+  padding: 4px 10px;
+  font-size: 0.74rem;
+}
+
+.cta {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--sky-deep);
+}

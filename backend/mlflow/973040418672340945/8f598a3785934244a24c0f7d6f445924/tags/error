@@ -1,0 +1,1 @@
+Gemini API call failed after retrying for ~10s (RetryError: Timeout of 10.0s exceeded, last exception: 504 Deadline Exceeded). This is usually the free-tier quota (20 requests/day — see https://ai.dev/rate-limit) or a transient outage. Try again late

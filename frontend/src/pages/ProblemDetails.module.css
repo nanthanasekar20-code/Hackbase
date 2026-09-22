@@ -1,0 +1,143 @@
+.back {
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 6px 0;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.back:hover {
+  color: var(--sky-deep);
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.title {
+  margin: 0;
+  max-width: 46ch;
+}
+
+.scoreCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.scoreLabel {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 48px;
+  align-items: start;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  min-width: 0;
+}
+
+.block {
+  min-width: 0;
+}
+
+.blockTitle {
+  font-size: 1.05rem;
+  margin-bottom: 12px;
+}
+
+.problemText {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink);
+  white-space: pre-line;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.competitiveCaveat {
+  margin: 0 0 18px;
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  background: var(--warning-bg);
+  color: var(--warning);
+  font-size: 0.8rem;
+}
+
+.portfolioRow {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.side {
+  position: sticky;
+  top: calc(var(--nav-h) + 24px);
+}
+
+.actionCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.actionTitle {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.actionDesc {
+  font-size: 0.86rem;
+  margin: -6px 0 4px;
+}
+
+.localNote {
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+  margin: 4px 0 0;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .side {
+    position: static;
+  }
+}

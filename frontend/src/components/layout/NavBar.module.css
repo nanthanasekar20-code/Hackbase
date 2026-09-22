@@ -1,0 +1,139 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.bar {
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.desktopNav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.link {
+  padding: 9px 16px;
+  border-radius: var(--r-pill);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+
+.link:hover {
+  color: var(--ink);
+  background: var(--surface-sunken);
+}
+
+.active {
+  color: var(--ink);
+  background: var(--sand);
+}
+
+.linkButton {
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.welcome {
+  color: var(--sky-deep);
+  white-space: nowrap;
+}
+
+.toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+
+.bun {
+  height: 2px;
+  width: 20px;
+  margin: 0 auto;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: transform var(--fast) var(--ease), opacity var(--fast) var(--ease);
+}
+
+.bunOpenTop {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.bunOpenMid {
+  opacity: 0;
+}
+
+.bunOpenBot {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.mobileNav {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .desktopNav {
+    display: none;
+  }
+
+  .toggle {
+    display: flex;
+  }
+
+  .mobileNav {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    background: var(--paper);
+    border-bottom: 1px solid var(--border);
+    transition: max-height var(--med) var(--ease);
+  }
+
+  .mobileNav nav {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 24px 20px;
+  }
+
+  .mobileOpen {
+    max-height: 420px;
+  }
+
+  .mobileLink {
+    padding: 14px 4px;
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mobileLink.active {
+    color: var(--sky-deep);
+  }
+
+  .mobileLink.linkButton {
+    width: 100%;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+}

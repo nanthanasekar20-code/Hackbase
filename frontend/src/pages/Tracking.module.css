@@ -1,0 +1,92 @@
+.header {
+  margin-bottom: 36px;
+  max-width: 640px;
+}
+
+.section {
+  margin-top: 48px;
+}
+
+.sectionTitle {
+  margin-bottom: 16px;
+}
+
+.emptyNote {
+  color: var(--ink-faint);
+  font-size: 0.92rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.skeletonCard {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.runCard {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.runHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.runTime {
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}
+
+.kv {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.kvItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 100px;
+}
+
+.kvKey {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+
+.kvVal {
+  font-size: 0.86rem;
+  color: var(--ink);
+}
+
+.error {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 0.82rem;
+  word-break: break-word;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

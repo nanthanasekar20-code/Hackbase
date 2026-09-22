@@ -1,0 +1,246 @@
+/* "Experimental Intelligence Lab" pass — see
+   src/styles/experimental-lab.css for the token/color foundation. The
+   color scope itself is toggled on document.body (see the useEffect in
+   Discover.jsx) so it also reaches the navbar; this file only adds the
+   actual paper-texture background image to this page's own <main>. */
+
+.paperBg {
+  background-image: url("../assets/backgrounds/discover-paper-texture.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-color: var(--paper);
+}
+
+.header {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.spiralMark {
+  color: var(--sky);
+  flex-shrink: 0;
+}
+
+.h1 {
+  margin: 10px 0 0;
+  font-size: clamp(2.4rem, 3vw + 1.6rem, 4.6rem);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.searchWrap {
+  max-width: 760px;
+  margin-top: 28px;
+}
+
+/* EmptyState's shared default (64px vertical padding) reads as an
+   overly tall rectangle right under the search bar here — shortened for
+   this one spot only via the className it now accepts. !important is
+   deliberate: this class and EmptyState's own ".wrap" are both
+   single-class CSS-module selectors of equal specificity applied to the
+   same element, so which one wins would otherwise depend on unpredictable
+   stylesheet import order rather than intent. */
+.idleState {
+  padding-top: 28px !important;
+  padding-bottom: 28px !important;
+  margin-top: 28px;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0 40px;
+  flex-wrap: wrap;
+}
+
+.statusCount {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.9rem;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.statusLabel {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+}
+
+.skeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+
+.skeletonRow {
+  height: 96px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonRow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--surface-sunken), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.clearBtn {
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--ink);
+  border-radius: var(--r-pill);
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.clearBtn:hover {
+  border-color: var(--sky);
+  color: var(--sky-deep);
+}
+
+/* ---- Result entries — large editorial rows, not cards ---- */
+
+.entries {
+  border-top: 1px solid var(--border);
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 28px;
+  align-items: start;
+  padding: 32px 0 32px 24px;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--lab-violet);
+  cursor: pointer;
+  background: none;
+  transition: background var(--fast) var(--ease);
+}
+
+.entry:hover,
+.entry:focus-visible {
+  background: var(--surface-sunken);
+}
+
+.entryIndex {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+  padding-top: 6px;
+}
+
+.entryMain {
+  min-width: 0;
+}
+
+.entryTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 1.1vw + 1.05rem, 1.9rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  max-width: 46ch;
+}
+
+.entryTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.entrySummary {
+  margin: 14px 0 0;
+  max-width: 62ch;
+  font-size: 0.94rem;
+  color: var(--ink-soft);
+}
+
+.entryDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 20px 0 16px;
+  max-width: 62ch;
+}
+
+.entryStats {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--lab-lime);
+}
+
+.statValue.violet {
+  color: var(--sky-deep);
+}
+
+.statLabel {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.66rem;
+  color: var(--ink-faint);
+}
+
+.entryAction {
+  align-self: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 0.82rem;
+  color: var(--ink);
+  white-space: nowrap;
+  padding-top: 6px;
+}
+
+.entry:hover .entryAction {
+  color: var(--sky-deep);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .entry {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 24px 0 24px 18px;
+  }
+  .entryAction {
+    justify-self: start;
+  }
+}

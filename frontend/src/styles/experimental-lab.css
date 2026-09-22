@@ -1,0 +1,102 @@
+/*
+ * "Experimental Intelligence Lab" design system — light/paper variant.
+ *
+ * Originally a dark deep-plum treatment; now flipped to sit on the real
+ * paper-texture photo used as Discover's background (see
+ * Discover.module.css). Deep Plum survives as the page's INK color
+ * instead of its background — text is dark-on-light now, and the
+ * violet/lime/coral/tangerine accents are used as solid, deepened
+ * ink-toned marks (with enough contrast to read as text) rather than
+ * bright colors glowing on black.
+ *
+ * Scoped to `.lab-scope`, applied to document.body only while Discover is
+ * mounted (see the useEffect in Discover.jsx) — not to any single page
+ * element. That's deliberate: the navbar renders as a SIBLING of the page
+ * content (see components/layout/Layout.jsx), not a descendant of
+ * Discover's own <main>, so a class scoped to <main> alone could never
+ * reach it via CSS inheritance. body is a real ancestor of both, so this
+ * is the one placement that can make the nav and the page read as one
+ * consistent surface. NavBar.module.css's own background was also
+ * changed from a hardcoded literal to `var(--paper)`-based, for the same
+ * reason — see that file.
+ *
+ * Same architecture as blueprint-editorial.css: every shared component in
+ * this app reads color/radius/shadow/font values entirely from the token
+ * names redefined below, with no hardcoded values (two known exceptions —
+ * Badge's "sand"/"clay" tones and the loading skeleton's shimmer — so
+ * this page's own markup avoids those two Badge tones and the shared
+ * skeleton component, using lab-native equivalents instead).
+ */
+
+.lab-scope {
+  /* ---- Light paper foundation (backs the texture photo itself) ---- */
+  --paper: #e7eefa;
+  --surface: #ffffff;
+  --surface-sunken: #e4e9f5;
+  --border: rgba(23, 15, 31, 0.16);
+  --border-strong: rgba(23, 15, 31, 0.42);
+
+  /* ---- Deep Plum, now used as ink rather than as a background ---- */
+  --ink: #170f1f;
+  --ink-soft: #4a3f55;
+  --ink-faint: #79708a;
+
+  /* ---- Electric Violet: primary accent, deepened where it doubles as
+     text/icon color so it stays legible on the light paper ---- */
+  --sky: #8b5cf6;
+  --sky-light: #c9b8fa;
+  --sky-dark: #6d3fe0;
+  --sky-deep: #5b21b6;
+
+  /* Functional colors (success/warning/danger) intentionally left as the
+     base tokens.css values — status meaning shouldn't shift with theme. */
+
+  /* Mixed corner treatment, deliberately: square on the big editorial
+     elements (handled directly in this page's own CSS, not via tokens),
+     a small 4px softness where a shared component wants one, fully round
+     only for pills/tags. */
+  --r-sm: 4px;
+  --r-md: 4px;
+  --r-lg: 4px;
+  --r-pill: 999px;
+
+  /* Thin borders, not card shadows. */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+
+  /* Site-wide fonts (see tokens.css) — redeclared here only so everything
+     this look needs lives in one place; kept in sync with tokens.css. */
+  --font-display: "Source Serif 4", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --font-mono: "Source Code Pro", ui-monospace, monospace;
+
+  /* ---- New, additive tokens: the palette for this page's own bespoke
+     markup (entry stripes, stat numbers) — deepened from the original
+     brief's raw hex values specifically where they're used as TEXT, so
+     "solid ink-colored marks on the light surface" actually has contrast
+     rather than just being a lighter version of the dark-mode glow. ---- */
+  --lab-plum: #170f1f;
+  --lab-violet: #7c3aed;
+  --lab-lime: #5f7a0f;
+  --lab-coral: #d94a3a;
+  --lab-tangerine: #c66d0e;
+
+  color: var(--ink);
+}
+
+/* Cycle through the four accent colors by index — used for the marker
+   stripe on each result entry, applied via nth-child so it stays in sync
+   with real result order automatically (no per-item color prop needed). */
+.lab-stripe > * {
+  border-left: 3px solid var(--lab-violet);
+}
+.lab-stripe > *:nth-child(4n + 2) {
+  border-left-color: var(--lab-lime);
+}
+.lab-stripe > *:nth-child(4n + 3) {
+  border-left-color: var(--lab-coral);
+}
+.lab-stripe > *:nth-child(4n + 4) {
+  border-left-color: var(--lab-tangerine);
+}

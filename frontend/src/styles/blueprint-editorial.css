@@ -1,0 +1,134 @@
+/*
+ * Blueprint + Editorial design foundation.
+ *
+ * Scoped, not global: every rule here either lives under `.be-scope` (which
+ * REDEFINES the existing design tokens from tokens.css — --ink, --sky,
+ * --border, --r-lg, --shadow-sm, etc.) or is a standalone `.be-*` utility
+ * class. Nothing here touches :root or the token definitions in
+ * tokens.css, and no existing global class (.container/.page/.eyebrow/...)
+ * is redefined — so a page that doesn't opt into `.be-scope` (i.e. every
+ * page except Home and Roadmap, for now) renders exactly as it did before
+ * this file existed.
+ *
+ * Why token-override rather than new component styles: every shared
+ * component in this app (Button, Card, Badge, ProgressBar, RoadmapStage,
+ * ResourceCard, ScoreBadge, SearchBar, Chip, EmptyState, ErrorState...)
+ * already reads color/radius/shadow/font values entirely from these same
+ * token names, with no hardcoded values. Redefining the tokens inside
+ * `.be-scope` re-skins every one of those shared components automatically,
+ * everywhere they're used inside Home.jsx / Roadmap.jsx, without editing a
+ * single shared component file — so their behavior (and every other page
+ * that also renders them) is completely unaffected.
+ *
+ * To extend this look to another page later: wrap that page's root
+ * element in `.be-scope` too (and reuse the `.be-*` utilities below) —
+ * nothing else needs to change.
+ */
+
+.be-scope {
+  /* ---- Ink & accent (the one committed accent color) ---- */
+  --ink: #12141b;
+  --ink-soft: #474b59;
+  --ink-faint: #8b8fa0;
+  --paper: #f5f4ef;
+  --surface: #ffffff;
+  --surface-sunken: #eceefa;
+  --border: #d8d9e2;
+  --border-strong: #12141b;
+
+  --sky: #3454ff;
+  --sky-light: #8da0ff;
+  --sky-dark: #1b32b8;
+  --sky-deep: #0f1f80;
+
+  /* Sand/clay kept as a warm secondary (manila-folder) note, muted to sit
+     quietly behind the one committed blue accent rather than compete with it. */
+  --sand: #ece4d3;
+  --sand-deep: #ddd0b3;
+  --clay: #d9d2c4;
+  --clay-deep: #c3b9a4;
+
+  /* Sharp, technical corners — a deliberate departure from the soft/pill
+     default look. Pill radii become a near-rectangle, not fully square,
+     so pill-shaped controls (buttons, badges, the progress track) still
+     read as one continuous shape rather than a broken rectangle. */
+  --r-sm: 2px;
+  --r-md: 2px;
+  --r-lg: 2px;
+  --r-pill: 3px;
+
+  /* Hard, offset "cut paper" shadows instead of soft blur — the zine/
+     drafting-table annotation feel called for in the brief. */
+  --shadow-sm: 3px 3px 0 rgba(18, 20, 27, 0.92);
+  --shadow-md: 5px 5px 0 rgba(18, 20, 27, 0.92);
+  --shadow-lg: 8px 8px 0 rgba(18, 20, 27, 0.92);
+
+  /* Site-wide fonts (see tokens.css) — redeclared here only so everything
+     this look needs lives in one place; kept in sync with tokens.css. */
+  --font-display: "Source Serif 4", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --font-mono: "Source Code Pro", ui-monospace, monospace;
+
+  /* ---- New, additive tokens (not overrides) for the utilities below ---- */
+  --be-grid-line: rgba(52, 84, 255, 0.1);
+  --be-grid-size: 28px;
+  --be-shadow-accent: 5px 5px 0 var(--sky-deep);
+
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Fine technical grid, drafting-table style. Apply to a `position:
+   relative` section; a subtle structural backdrop, not a pattern that
+   competes with content. */
+.be-grid-bg {
+  background-image: linear-gradient(var(--be-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--be-grid-line) 1px, transparent 1px);
+  background-size: var(--be-grid-size) var(--be-grid-size);
+}
+
+/* Four-corner crop/registration marks — a recurring decorative motif on
+   cards/sections. Uses background-image (not background shorthand), so it
+   composes safely with an element's own background-color; it does NOT
+   compose with another background-image on the same element. */
+.be-crop {
+  position: relative;
+  background-repeat: no-repeat;
+  background-image: linear-gradient(var(--ink), var(--ink)), linear-gradient(var(--ink), var(--ink)),
+    linear-gradient(var(--ink), var(--ink)), linear-gradient(var(--ink), var(--ink)),
+    linear-gradient(var(--ink), var(--ink)), linear-gradient(var(--ink), var(--ink)),
+    linear-gradient(var(--ink), var(--ink)), linear-gradient(var(--ink), var(--ink));
+  background-position: top 0 left 0, top 0 left 0, top 0 right 0, top 0 right 0, bottom 0 left 0, bottom 0 left 0,
+    bottom 0 right 0, bottom 0 right 0;
+  background-size: 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px;
+}
+
+/* Dimension-line connector: a hairline flanked label, architectural-
+   annotation style. Flex order puts ::before / child / ::after in a row,
+   so a single mono-styled child sits centered between two rules. */
+.be-dim {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-faint);
+}
+
+.be-dim::before,
+.be-dim::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-strong);
+  opacity: 0.35;
+}
+
+/* Small mono/uppercase data-label treatment — dimension numbers, source
+   tags, counts. Composes with the existing global `.mono` class. */
+.be-label {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}

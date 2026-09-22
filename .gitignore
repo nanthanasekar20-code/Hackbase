@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Env
+.env
+
+# Node
+node_modules/
+dist/
+
+# Data / experiments
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+mlflow/*
+!mlflow/.gitkeep
+
+# Database (generated locally, not source code)
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
