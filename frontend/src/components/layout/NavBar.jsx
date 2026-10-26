@@ -8,9 +8,9 @@ import styles from "./NavBar.module.css";
 const BASE_LINKS = [
   { to: "/", label: "Home", end: true },
   { to: "/discover", label: "Discover" },
+  { to: "/domains", label: "Domains" },
+  { to: "/live-hackathons", label: "Live Hackathons" },
   { to: "/projects", label: "My Projects" },
-  { to: "/roadmaps", label: "Roadmaps" },
-  { to: "/resources", label: "Resources" },
   { to: "/how-it-works", label: "How It Works" },
 ];
 
@@ -134,7 +134,7 @@ export default function NavBar() {
       <ConfirmDialog
         open={confirmingLogout}
         title="Log out?"
-        description="You'll need to log back in to see My Projects, Roadmaps, and Tracking."
+        description="You'll need to log back in to see My Projects and Tracking."
         confirmLabel="Log out"
         onConfirm={confirmLogout}
         onCancel={() => setConfirmingLogout(false)}

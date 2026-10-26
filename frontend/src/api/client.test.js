@@ -1,14 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // axios.create() is called once at module load in client.js — mock it to
-// return one fixed object so every test controls the exact same `post` spy
-// the module actually calls through.
+// return one fixed object so every test controls the exact same `post`/`get`
+// spies the module actually calls through.
 const post = vi.fn();
+const get = vi.fn();
 vi.mock("axios", () => ({
   default: {
     create: () => ({
       post,
-      get: vi.fn(),
+      get,
       patch: vi.fn(),
       delete: vi.fn(),
       interceptors: { request: { use: vi.fn() } },
@@ -16,7 +17,9 @@ vi.mock("axios", () => ({
   },
 }));
 
-const { generatePlan, exportRoadmapPptx } = await import("./client.js");
+const { generatePlan, exportFavoritePptx, viewFavoritePdf, getRandomProblems, getProblems } = await import(
+  "./client.js"
+);
 
 describe("generatePlan", () => {
   beforeEach(() => {
@@ -76,54 +79,117 @@ describe("generatePlan", () => {
   });
 });
 
-describe("exportRoadmapPptx", () => {
+describe("exportFavoritePptx", () => {
   beforeEach(() => {
-    post.mockReset();
+    get.mockReset();
     window.URL.createObjectURL = vi.fn(() => "blob:mock-url");
     window.URL.revokeObjectURL = vi.fn();
   });
 
-  it("sends the already-generated plan (not just a problem id) so export costs no extra Gemini call", async () => {
-    const plan = { roadmap: [], tech_stack: ["Python"] };
-    post.mockResolvedValueOnce({
+  it("requests the cached PPT for the project by problem id, not by resending the plan", async () => {
+    get.mockResolvedValueOnce({
       data: new Blob(["fake pptx bytes"]),
       headers: { "content-disposition": 'attachment; filename="crop-disease-detector.pptx"' },
     });
 
-    await exportRoadmapPptx({
-      problemTitle: "Crop Disease Detector",
-      problemStatement: "Detect crop disease from leaf images.",
-      source: "sih",
-      hackathonName: "Smart India Hackathon 2025",
-      plan,
-    });
+    await exportFavoritePptx("sih:p1");
 
-    expect(post).toHaveBeenCalledWith(
-      "/plan/export-pptx",
-      {
-        problem_title: "Crop Disease Detector",
-        problem_statement: "Detect crop disease from leaf images.",
-        source: "sih",
-        hackathon_name: "Smart India Hackathon 2025",
-        plan,
-      },
-      { responseType: "blob" }
-    );
+    expect(get).toHaveBeenCalledWith("/favorites/sih%3Ap1/export-pptx", { responseType: "blob" });
   });
 
   it("triggers a real browser download named from the backend's Content-Disposition header", async () => {
-    post.mockResolvedValueOnce({
+    get.mockResolvedValueOnce({
       data: new Blob(["fake pptx bytes"]),
       headers: { "content-disposition": 'attachment; filename="crop-disease-detector.pptx"' },
     });
     const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
 
-    await exportRoadmapPptx({ problemTitle: "Crop Disease Detector", plan: {} });
+    await exportFavoritePptx("sih:p1");
 
     expect(window.URL.createObjectURL).toHaveBeenCalled();
     expect(clickSpy).toHaveBeenCalledTimes(1);
     expect(window.URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
 
     clickSpy.mockRestore();
+  });
+});
+
+describe("viewFavoritePdf", () => {
+  beforeEach(() => {
+    get.mockReset();
+    window.URL.createObjectURL = vi.fn(() => "blob:mock-pdf-url");
+    window.URL.revokeObjectURL = vi.fn();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("requests the PDF rendering for the project by problem id", async () => {
+    get.mockResolvedValueOnce({ data: new Blob(["fake pdf bytes"]) });
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => {});
+
+    await viewFavoritePdf("sih:p1");
+
+    expect(get).toHaveBeenCalledWith("/favorites/sih%3Ap1/view-pdf", { responseType: "blob" });
+
+    openSpy.mockRestore();
+  });
+
+  it("opens the PDF in a new tab instead of downloading it", async () => {
+    get.mockResolvedValueOnce({ data: new Blob(["fake pdf bytes"]) });
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => {});
+
+    await viewFavoritePdf("sih:p1");
+
+    expect(window.URL.createObjectURL).toHaveBeenCalled();
+    expect(openSpy).toHaveBeenCalledWith("blob:mock-pdf-url", "_blank", "noopener,noreferrer");
+    expect(window.URL.revokeObjectURL).not.toHaveBeenCalled(); // not yet — only after the delay
+
+    vi.advanceTimersByTime(60_000);
+    expect(window.URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-pdf-url");
+
+    openSpy.mockRestore();
+  });
+});
+
+describe("getRandomProblems", () => {
+  beforeEach(() => {
+    get.mockReset();
+  });
+
+  it("requests the given count from /problems/random", async () => {
+    get.mockResolvedValueOnce({ data: { problems: [] } });
+    await getRandomProblems(6);
+    expect(get).toHaveBeenCalledWith("/problems/random", { params: { count: 6 } });
+  });
+
+  it("defaults to 6 when no count is given", async () => {
+    get.mockResolvedValueOnce({ data: { problems: [] } });
+    await getRandomProblems();
+    expect(get).toHaveBeenCalledWith("/problems/random", { params: { count: 6 } });
+  });
+});
+
+describe("getProblems", () => {
+  beforeEach(() => {
+    get.mockReset();
+  });
+
+  it("requests page 1 / page_size 20 by default", async () => {
+    get.mockResolvedValueOnce({ data: { problems: [], total: 0 } });
+    await getProblems();
+    expect(get).toHaveBeenCalledWith("/problems", {
+      params: { page: 1, page_size: 20, domain: undefined, source: undefined, category: undefined, difficulty: undefined },
+    });
+  });
+
+  it("passes through a requested page and filters", async () => {
+    get.mockResolvedValueOnce({ data: { problems: [], total: 0 } });
+    await getProblems({ page: 3, pageSize: 10, domain: "AI/ML", source: "sih" });
+    expect(get).toHaveBeenCalledWith("/problems", {
+      params: { page: 3, page_size: 10, domain: "AI/ML", source: "sih", category: undefined, difficulty: undefined },
+    });
   });
 });

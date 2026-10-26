@@ -29,6 +29,26 @@ def get_current_user(
     return user
 
 
+def get_optional_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """
+    Same decoding as get_current_user, but never raises — returns None for
+    a missing/invalid/expired token instead of 401ing. For endpoints like
+    GET /search that must work identically for anonymous users and only
+    add behavior (personalization) for a logged-in one — see
+    app/api/routes/search.py.
+    """
+    if credentials is None:
+        return None
+    try:
+        email = decode_access_token(credentials.credentials)
+    except InvalidTokenError:
+        return None
+    return db.query(User).filter(User.email == email).first()
+
+
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     """
     Same as get_current_user, plus requires role == "admin". 403 (not 401)

@@ -81,6 +81,97 @@
   font-size: 0.84rem;
 }
 
+/* --- Scores group: collapsible threshold filters over the 9 Gemini
+   enrichment fields, visually separate from the exact-value chip groups
+   above since these are numeric ranges, not toggles. --- */
+
+.scoresToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.scoresChevron {
+  color: var(--ink-faint);
+  font-size: 0.7rem;
+}
+
+.scoreRows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  margin-top: 4px;
+  min-width: 220px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+
+.scoreRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scoreRowHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.scoreLabel {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.scoreLabelActive {
+  color: var(--sky-deep);
+  font-weight: 600;
+}
+
+.scoreReset {
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.scoreReset:hover {
+  color: var(--sky-deep);
+}
+
+.scoreSlider {
+  width: 100%;
+  accent-color: var(--sky-deep);
+}
+
+.clearAll {
+  align-self: flex-end;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--ink);
+  border-radius: var(--r-pill);
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.clearAll:hover {
+  border-color: var(--sky);
+  color: var(--sky-deep);
+}
+
 @media (max-width: 700px) {
   .bar {
     flex-direction: column;

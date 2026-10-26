@@ -29,7 +29,9 @@ describe("Login", () => {
 
     renderLogin();
     await userEvent.type(screen.getByLabelText(/email/i), "alice@example.com");
-    await userEvent.type(screen.getByLabelText(/password/i), "correct-horse-battery");
+    // Exact match — a regex here also matches the show/hide-password
+    // toggle button's aria-label ("Show password").
+    await userEvent.type(screen.getByLabelText("Password"), "correct-horse-battery");
     await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     expect(login).toHaveBeenCalledWith("alice@example.com", "correct-horse-battery");
@@ -44,10 +46,31 @@ describe("Login", () => {
 
     renderLogin();
     await userEvent.type(screen.getByLabelText(/email/i), "alice@example.com");
-    await userEvent.type(screen.getByLabelText(/password/i), "wrong-password");
+    await userEvent.type(screen.getByLabelText("Password"), "wrong-password");
     await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     expect(await screen.findByText("Incorrect email or password.")).toBeInTheDocument();
     expect(screen.queryByText("Home Page")).not.toBeInTheDocument();
+  });
+
+  it("toggles password visibility when the eye icon is clicked", async () => {
+    useAuth.mockReturnValue({ login: vi.fn() });
+    renderLogin();
+
+    const passwordInput = screen.getByLabelText("Password");
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    await userEvent.click(screen.getByRole("button", { name: /show password/i }));
+    expect(passwordInput).toHaveAttribute("type", "text");
+
+    await userEvent.click(screen.getByRole("button", { name: /hide password/i }));
+    expect(passwordInput).toHaveAttribute("type", "password");
+  });
+
+  it("links to the forgot-password page", () => {
+    useAuth.mockReturnValue({ login: vi.fn() });
+    renderLogin();
+
+    expect(screen.getByRole("link", { name: /forgot password/i })).toHaveAttribute("href", "/forgot-password");
   });
 });

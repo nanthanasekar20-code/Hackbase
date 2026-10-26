@@ -9,7 +9,7 @@ that happen to share the placeholder title. Title-only similarity
 matching collapsed all 34 into 1; this must not regress.
 """
 
-from app.core.taxonomy import extract_technologies
+from app.core.taxonomy import extract_technologies, map_domains
 from app.ingestion.clean import clean_pipeline, stable_id
 
 
@@ -202,6 +202,21 @@ def test_ar_mentions_match_the_ar_vr_technology():
     assert "AR/VR" in extract_technologies("A VR training simulator for surgeons.")
     assert "AR/VR" in extract_technologies("Explore a virtual reality campus tour.")
     assert "AR/VR" not in extract_technologies("A standard web app with no immersive tech.")
+
+
+def test_aiml_concatenated_form_matches_ai_ml_domain():
+    """
+    Regression test for the same class of bug as test_ar_mentions_match_the_
+    ar_vr_technology, found the same way (a real saved plan with an empty
+    Resources page): SIH problem statements often write "AIML" with no
+    separator ("AIML based Nowcasting of thunderstorm and lightning..."),
+    which none of "ai/ml" / "ai-ml" / standalone "ai" matched — "ai" needs a
+    right word-boundary, and "AIML" doesn't have one after "ai". Left
+    completely untagged (no domain -> no resources, since the Resource
+    Agent's DOMAIN_RESOURCES lookup had nothing to key off).
+    """
+    assert "AI/ML" in map_domains("AIML based Nowcasting of thunderstorm and lightning using atmospheric data.")
+    assert "AI/ML" in map_domains("An AIML-powered crop yield predictor.")
 
 
 def test_crop_disease_does_not_imply_healthcare_domain():

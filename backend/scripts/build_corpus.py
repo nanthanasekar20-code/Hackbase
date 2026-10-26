@@ -13,9 +13,9 @@ checked-in SIH snapshot when data/raw/sih.json is missing or empty, so the
 pipeline always has real (if possibly dated) data to build from, e.g. if
 sih.gov.in is unreachable or has changed its markup.
 
-Preserves Phase 2 Gemini enrichment (resume_value_score /
-industry_relevance_score / technical_depth_score, from
-scripts/enrich_resume_value.py) across a rebuild: a real incident already
+Preserves Gemini enrichment (all nine *_score fields scored by
+scripts/enrich_resume_value.py — see its SCORE_FIELDS/RESUME_VALUE_FIELDS
+below, kept in sync by hand) across a rebuild: a real incident already
 happened where a rebuild silently wiped every already-computed score back
 to null, since this script always regenerates problems.json from raw
 sources and those fields don't exist anywhere in raw/seed data. Before
@@ -30,6 +30,18 @@ new raw records are added to its (source, hackathon_name) group — see
 app.ingestion.clean.dedupe), which is a pre-existing property of how ids
 are derived, not something introduced here.
 
+Also preserves and stamps first_seen_at (see
+app.schemas.problem.ProcessedProblem.first_seen_at) the same way: any
+problem whose id already appears in the existing problems.json keeps its
+original first_seen_at, and only a genuinely new id gets stamped with
+today's date. This is what makes the frontend's "New" badge (see
+app.schemas.query.RankedResult) mean "actually new to the corpus" instead
+of "happened to be in the most recent rebuild" — see
+_restore_first_seen_dates(). The very first run of this script after
+first_seen_at was introduced has no prior dates to restore at all, which
+would otherwise stamp all 612 existing problems as "new" in one go — see
+scripts/backfill_first_seen.py, meant to run once before that happens.
+
 Run as: python scripts/build_corpus.py
 """
 
@@ -38,6 +50,7 @@ from __future__ import annotations
 import json
 import logging
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 
 from app.ingestion.clean import clean_pipeline
@@ -51,7 +64,23 @@ RAW_DIR = ROOT / "data" / "raw"
 SEED_DIR = ROOT / "data" / "seed"
 PROCESSED_DIR = ROOT / "data" / "processed"
 
-RESUME_VALUE_FIELDS = ("resume_value_score", "industry_relevance_score", "technical_depth_score")
+# Must match scripts/enrich_resume_value.py's SCORE_FIELDS exactly — every
+# field Gemini enrichment can write needs to be preserved across a rebuild
+# (see _restore_resume_value_scores() below), or adding a new enrichment
+# field here-but-not-there would silently wipe it on the next
+# `python scripts/build_corpus.py` run, same class of bug this whole
+# preserve-on-rebuild mechanism exists to prevent.
+RESUME_VALUE_FIELDS = (
+    "resume_value_score",
+    "industry_relevance_score",
+    "technical_depth_score",
+    "novelty_score",
+    "dataset_availability_score",
+    "hardware_requirement_score",
+    "competition_potential_score",
+    "social_impact_score",
+    "feasibility_score",
+)
 
 
 def _load_json(path: Path) -> list[dict]:
@@ -80,10 +109,19 @@ def gather_raw_records() -> list[dict]:
         logger.info("live SIH scrape not found/empty — using seed snapshot: %d records", len(snapshot))
         records.extend(snapshot)
 
-    # Any other live-scraped sources (devpost/unstop/hackerearth), if the
+    # Any other live-scraped sources (unstop/hackerearth/...), if the
     # scrapers for them are ever implemented and produce output.
+    #
+    # devpost.json is deliberately skipped even if it exists on disk (e.g.
+    # a stale file from before scripts/run_scrapers.py stopped registering
+    # DevpostScraper — see that script's docstring for why): this glob
+    # reads whatever *.json files happen to be sitting in data/raw/
+    # regardless of which scraper wrote them or whether that scraper is
+    # still registered, so simply unregistering the scraper would NOT have
+    # stopped an already-written devpost.json from being silently
+    # re-ingested on every future rebuild.
     for path in sorted(RAW_DIR.glob("*.json")):
-        if path.name == "sih.json":
+        if path.name in ("sih.json", "devpost.json"):
             continue
         other = _load_json(path)
         if other:
@@ -94,14 +132,28 @@ def gather_raw_records() -> list[dict]:
     logger.info("curated supplementary records: %d", len(curated))
     records.extend(curated)
 
+    # Belt-and-suspenders on top of the devpost.json skip above: also
+    # drops any devpost-source record regardless of *where* it came from
+    # (curated_supplementary.json has 12 hand-picked devpost entries of
+    # its own, predating the scraper) — the corpus has no reliable way to
+    # tell a real per-problem statement apart from a whole-hackathon
+    # blurb for this source at all right now, so none of it belongs here
+    # (see scripts/run_scrapers.py's docstring). Revisit if/when
+    # devpost_scraper.py is extended to find real per-sponsor challenges.
+    before = len(records)
+    records = [r for r in records if r.get("source") != "devpost"]
+    dropped = before - len(records)
+    if dropped:
+        logger.info("dropped %d devpost-source record(s) — not fed into the main corpus (see docstring)", dropped)
+
     return records
 
 
 def _load_existing_resume_value_scores(path: Path) -> dict[str, dict]:
-    """id -> {resume_value_score, industry_relevance_score,
-    technical_depth_score} for every already-enriched problem currently on
-    disk (only fields that are actually non-null — a problem with no
-    enrichment yet contributes nothing)."""
+    """id -> {<whichever of RESUME_VALUE_FIELDS are set>} for every
+    already-enriched problem currently on disk (only fields that are
+    actually non-null — a problem with no enrichment yet contributes
+    nothing, and a partially-enriched one only contributes what it has)."""
     if not path.exists():
         return {}
     try:
@@ -136,6 +188,46 @@ def _restore_resume_value_scores(processed: list[ProcessedProblem], existing_sco
     return restored
 
 
+def _load_existing_first_seen_dates(path: Path) -> dict[str, str]:
+    """id -> first_seen_at for every problem currently on disk that
+    already has one. Mirrors _load_existing_resume_value_scores() above —
+    same reasoning, different field."""
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.warning("could not read existing %s for first_seen_at preservation: %s", path, exc)
+        return {}
+
+    dates: dict[str, str] = {}
+    for problem in data:
+        problem_id = problem.get("id")
+        first_seen_at = problem.get("first_seen_at")
+        if problem_id and first_seen_at:
+            dates[problem_id] = first_seen_at
+    return dates
+
+
+def _restore_first_seen_dates(processed: list[ProcessedProblem], existing_dates: dict[str, str]) -> tuple[int, int]:
+    """Mutates `processed` in place: restores first_seen_at for any problem
+    whose id was already on disk, and stamps today's date on every problem
+    that still has none afterwards (a genuinely new id). Returns
+    (restored_count, newly_stamped_count)."""
+    today = datetime.now(timezone.utc).date().isoformat()
+    restored = 0
+    stamped = 0
+    for problem in processed:
+        prior = existing_dates.get(problem.id)
+        if prior:
+            problem.first_seen_at = prior
+            restored += 1
+        elif not problem.first_seen_at:
+            problem.first_seen_at = today
+            stamped += 1
+    return restored, stamped
+
+
 def main():
     raw_records = gather_raw_records()
     if not raw_records:
@@ -161,6 +253,15 @@ def main():
                 "their enrichment scores could not be restored (see this script's module docstring)",
                 len(existing_scores) - restored,
             )
+
+    existing_dates = _load_existing_first_seen_dates(out_path)
+    dates_restored, newly_stamped = _restore_first_seen_dates(processed, existing_dates)
+    logger.info(
+        "first_seen_at: restored %d, newly stamped %d (today) — run scripts/backfill_first_seen.py "
+        "once before the first rebuild after upgrading, or every pre-existing problem stamps as new",
+        dates_restored,
+        newly_stamped,
+    )
 
     out_path.write_text(
         json.dumps([p.model_dump() for p in processed], indent=2, ensure_ascii=False),

@@ -46,6 +46,17 @@
   font-size: 0.74rem;
 }
 
+.scoreTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.scoreTags span {
+  padding: 4px 9px;
+  font-size: 0.66rem;
+}
+
 .cta {
   margin-top: auto;
   padding-top: 6px;

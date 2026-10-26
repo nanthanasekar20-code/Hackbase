@@ -193,6 +193,49 @@ export function IconSpiral(props) {
   );
 }
 
+export function IconEye(props) {
+  return (
+    <svg {...base} {...props}>
+      <path
+        d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+export function IconEyeOff(props) {
+  return (
+    <svg {...base} {...props}>
+      <path
+        d="M3 3l18 18M10.6 10.6a3 3 0 004.24 4.24M7.4 7.5C4.9 9 3.3 12 3.3 12s3.5 7 8.7 7c1.6 0 3-.3 4.2-.9M14.7 6.4c-.85-.25-1.75-.4-2.7-.4-1.6 0-3 .3-4.2.9m10.9 2.2c1.6 1.5 2.3 2.9 2.3 2.9s-.6 1.2-1.7 2.6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconRefresh(props) {
+  return (
+    <svg {...base} {...props}>
+      <path
+        d="M4 11a8 8 0 0114.5-4.5M20 4v5h-5M20 13a8 8 0 01-14.5 4.5M4 20v-5h5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function IconSparkle(props) {
   return (
     <svg {...base} {...props}>

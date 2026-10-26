@@ -1,0 +1,118 @@
+.back {
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 6px 0;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.back:hover {
+  color: var(--sky-deep);
+}
+
+.header {
+  max-width: 640px;
+  margin-bottom: 32px;
+}
+
+.h1 {
+  margin: 10px 0 8px;
+  font-size: clamp(2rem, 2.4vw + 1.4rem, 3.2rem);
+  letter-spacing: -0.02em;
+}
+
+.resultCount {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--ink-faint);
+}
+
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px 0;
+  margin-bottom: 8px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 180px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.86rem;
+}
+
+.sourceChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.clearFilters {
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--ink);
+  border-radius: var(--r-pill);
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.clearFilters:hover {
+  border-color: var(--sky);
+  color: var(--sky-deep);
+}
+
+.liveList {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+}
+
+.liveRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 4px;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--fast) var(--ease);
+}
+
+a.liveRow:hover {
+  background: var(--surface-sunken);
+}
+
+.liveTitle {
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.liveDeadline {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.liveIcon {
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}

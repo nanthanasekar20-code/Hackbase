@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, LargeBinary, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -36,6 +36,18 @@ class Favorite(Base):
     # {"<stage_index>-<task_index>": true} checklist state for the plan
     # above.
     task_progress = Column(JSON, nullable=True)
+    # Generated once (lazily, on first GET .../export-pptx) and cached here
+    # so re-downloading the same roadmap's PPT never needs regenerating it
+    # or re-uploading a plan payload — see app/api/routes/favorites.py.
+    # Null until the first export. Cleared (set back to null) whenever the
+    # plan changes, since a stale PPT for an old roadmap would be wrong.
+    pptx_file = Column(LargeBinary, nullable=True)
+    pptx_filename = Column(String, nullable=True)
+    # Same idea, but a .pdf rendering of the same plan (see
+    # app/services/pdf_builder.py) — used by "View PPT" to open directly
+    # in the browser's own PDF viewer, since browsers can't render .pptx.
+    pdf_file = Column(LargeBinary, nullable=True)
+    pdf_filename = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

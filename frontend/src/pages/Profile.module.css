@@ -28,3 +28,19 @@
   font-size: 0.8rem;
   color: var(--ink-faint);
 }
+
+.passwordCard {
+  margin-top: 20px;
+}
+
+.pwActions {
+  display: flex;
+  gap: 10px;
+}
+
+.chipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}

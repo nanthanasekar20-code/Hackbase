@@ -1,14 +1,11 @@
 import logging
-import re
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import StreamingResponse
 
 from app.rag.gemini_client import GeminiNotConfiguredError, GeminiUnavailableError
-from app.schemas.plan import PlanRequest, PlanResponse, PptxExportRequest
+from app.schemas.plan import PlanRequest, PlanResponse
 from app.agents.planning_agent import PlanningAgent
 from app.agents.resource_agent import ResourceAgent
-from app.services.pptx_builder import build_pptx
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +13,6 @@ router = APIRouter()
 
 planning_agent = PlanningAgent()
 resource_agent = ResourceAgent()
-
-PPTX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 
 
 @router.post("/plan", response_model=PlanResponse)
@@ -29,6 +24,11 @@ def generate_plan(request: PlanRequest):
     isn't configured or the call fails, this returns a clear HTTP error
     rather than a fabricated/generic roadmap. Resources are unaffected
     (the Resource Agent doesn't depend on Gemini).
+
+    PPT export lives at GET /favorites/{problem_id}/export-pptx now, not
+    here — it needs this plan already saved to a favorite (so the PPT can
+    be cached and re-served instead of rebuilt on every download); see
+    app/api/routes/favorites.py.
     """
     try:
         plan = planning_agent.run(request.problem_statement)
@@ -46,26 +46,3 @@ def generate_plan(request: PlanRequest):
 
     resources = resource_agent.run(request.problem_statement)
     return PlanResponse(**plan, resources=resources)
-
-
-@router.post("/plan/export-pptx")
-def export_plan_pptx(request: PptxExportRequest):
-    """
-    Formats a plan the frontend already has (from a prior POST /plan) into
-    a downloadable .pptx — see app.services.pptx_builder. Deliberately
-    takes the plan as input rather than re-running the Planning Agent, so
-    exporting costs no additional Gemini calls.
-    """
-    buffer = build_pptx(
-        problem_title=request.problem_title,
-        problem_statement=request.problem_statement,
-        plan=request.plan.model_dump(),
-        source=request.source,
-        hackathon_name=request.hackathon_name,
-    )
-    filename = re.sub(r"[^A-Za-z0-9]+", "-", request.problem_title).strip("-").lower() or "roadmap"
-    return StreamingResponse(
-        buffer,
-        media_type=PPTX_MEDIA_TYPE,
-        headers={"Content-Disposition": f'attachment; filename="{filename}.pptx"'},
-    )

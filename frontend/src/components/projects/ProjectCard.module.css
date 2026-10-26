@@ -18,16 +18,34 @@
   gap: 6px;
 }
 
-.remove {
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.iconBtn {
   border: none;
   background: none;
   color: var(--ink-faint);
   padding: 4px;
   border-radius: 6px;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
-.remove:hover {
+.iconBtn:hover {
+  color: var(--sky-deep);
+  background: var(--surface-sunken);
+}
+
+.iconBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.iconBtn:last-child:hover {
   color: var(--danger);
   background: var(--danger-bg);
 }

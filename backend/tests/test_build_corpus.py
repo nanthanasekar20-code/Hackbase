@@ -134,3 +134,83 @@ def test_main_preserves_scores_across_a_full_rebuild_that_adds_new_records(tmp_p
 
     new = next(p for p in result if p["source"] == "article")
     assert new["resume_value_score"] is None  # genuinely new — nothing to restore, nothing fabricated
+
+
+def test_restore_resume_value_scores_covers_all_nine_enrichment_fields(tmp_path):
+    """Regression test for the exact class of bug this module's docstring
+    describes: RESUME_VALUE_FIELDS must list every field
+    scripts/enrich_resume_value.py can write (SCORE_FIELDS), not just the
+    original three — otherwise the six newer scores (novelty_score etc.)
+    would silently vanish on the next rebuild, same as resume_value_score
+    did in the original incident."""
+    processed = [_problem("sih:p1")]
+    existing_scores = {
+        "sih:p1": {
+            "resume_value_score": 8.5,
+            "industry_relevance_score": 7.0,
+            "technical_depth_score": 9.0,
+            "novelty_score": 6.5,
+            "dataset_availability_score": 4.0,
+            "hardware_requirement_score": 2.0,
+            "competition_potential_score": 7.5,
+            "social_impact_score": 8.0,
+            "feasibility_score": 9.5,
+        }
+    }
+
+    build_corpus._restore_resume_value_scores(processed, existing_scores)
+
+    p1 = processed[0]
+    assert p1.novelty_score == 6.5
+    assert p1.dataset_availability_score == 4.0
+    assert p1.hardware_requirement_score == 2.0
+    assert p1.competition_potential_score == 7.5
+    assert p1.social_impact_score == 8.0
+    assert p1.feasibility_score == 9.5
+
+
+def test_gather_raw_records_excludes_devpost_regardless_of_origin(tmp_path, monkeypatch):
+    """Devpost hackathons don't have distinct per-problem statements the
+    way SIH does (see scripts/run_scrapers.py's docstring) — none of it
+    should reach the main corpus, whether it came from a (possibly stale)
+    data/raw/devpost.json or from curated_supplementary.json's own
+    hand-picked devpost entries (which predate the scraper)."""
+    raw_dir = tmp_path / "raw"
+    seed_dir = tmp_path / "seed"
+    raw_dir.mkdir()
+    seed_dir.mkdir()
+
+    (raw_dir / "sih.json").write_text(
+        json.dumps([{"title": "Real SIH Problem", "source": "sih", "external_id": "p1"}]), encoding="utf-8"
+    )
+    # A stale raw/devpost.json, as if left over from before the scraper was unregistered.
+    (raw_dir / "devpost.json").write_text(
+        json.dumps([{"title": "Some Hackathon's About Blurb", "source": "devpost"}]), encoding="utf-8"
+    )
+    (seed_dir / "curated_supplementary.json").write_text(
+        json.dumps(
+            [
+                {"title": "Hand-curated Devpost Entry", "source": "devpost"},
+                {"title": "Hand-curated Campus Entry", "source": "campus"},
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(build_corpus, "RAW_DIR", raw_dir)
+    monkeypatch.setattr(build_corpus, "SEED_DIR", seed_dir)
+
+    records = build_corpus.gather_raw_records()
+
+    sources = {r["source"] for r in records}
+    assert "devpost" not in sources
+    assert sources == {"sih", "campus"}  # the non-devpost records from both origins survive
+
+
+def test_resume_value_fields_constant_matches_enrichment_scripts_score_fields():
+    """The two tuples are defined independently (by design — see both
+    modules' docstrings on why they don't share an import) and must be
+    kept in sync by hand. This fails loudly if they ever drift apart."""
+    from scripts.enrich_resume_value import SCORE_FIELDS
+
+    assert set(build_corpus.RESUME_VALUE_FIELDS) == set(SCORE_FIELDS)

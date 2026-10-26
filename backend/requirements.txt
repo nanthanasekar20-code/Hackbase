@@ -38,12 +38,22 @@ requests==2.32.3
 beautifulsoup4==4.12.3
 playwright==1.47.0
 
+# Scheduling (live hackathon recommendations — see
+# app/services/refresh_job.py, wired up in app/main.py)
+APScheduler==3.10.4
+
 # Experiment tracking
 mlflow==2.16.2
 
 # PPT export (app/services/pptx_builder.py) — formats an already-generated
 # plan into a .pptx; makes no Gemini calls of its own.
 python-pptx==1.0.2
+
+# "View PPT" in-browser (app/services/pdf_builder.py) — browsers can't
+# render .pptx natively and this machine has no LibreOffice/PowerPoint for
+# server-side pptx->pdf conversion, so this renders the same plan data as a
+# real PDF instead (pure Python, no external binary required).
+reportlab==5.0.1
 
 # Testing
 pytest==8.3.3

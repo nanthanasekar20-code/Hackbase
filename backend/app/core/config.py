@@ -50,5 +50,39 @@ class Settings(BaseSettings):
     # new release.
     sih_year: str = "2025"
 
+    # --- Live refresh (see app/services/refresh_job.py) ---
+    # When enabled, a background job runs scripts/run_scrapers.py ->
+    # scripts/build_corpus.py -> app/rag/index_builder.py on a timer
+    # instead of requiring someone to run those three scripts by hand.
+    # On by default; set to false in .env for local dev if you don't want
+    # a background job periodically hitting scraper sites and rebuilding
+    # the index. Deliberately does NOT include the Gemini resume-value
+    # enrichment pass — see refresh_job.py's docstring for why that stays
+    # a lazy, per-save trigger instead (app/api/routes/favorites.py).
+    auto_refresh_enabled: bool = True
+    auto_refresh_interval_hours: int = 24
+
+    # --- Live Hackathons refresh (see app/services/live_hackathons_job.py) ---
+    # A separate, unrelated background job — refreshes
+    # data/processed/live_hackathons.json (hackathon name/source/link,
+    # scraped from external platforms) on its own timer. Nothing here
+    # touches the problem-statement corpus or its own refresh job above.
+    live_hackathons_refresh_enabled: bool = True
+    live_hackathons_refresh_interval_hours: int = 6
+
+    # --- Email (password reset — see app/core/email.py) ---
+    # Blank host means "not configured": forgot-password requests then fail
+    # with a clear 503 instead of silently pretending an email was sent.
+    # Any real SMTP provider works (Gmail with an app password, SendGrid,
+    # Mailgun's SMTP endpoint, etc.).
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_use_tls: bool = True
+    # Where the emailed reset link points — the Vite dev server by default.
+    frontend_base_url: str = "http://localhost:5173"
+
 
 settings = Settings()

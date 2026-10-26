@@ -42,7 +42,7 @@ DOMAINS = [
 # multiple keys hit.
 THEME_KEYWORDS: dict[str, list[str]] = {
     "AI/ML": [
-        "artificial intelligence", "machine learning", "ai/ml", "ai-ml", "ai",
+        "artificial intelligence", "machine learning", "ai/ml", "ai-ml", "aiml", "ai",
         "deep learning", "computer vision", "nlp", "predictive model", "neuro ai",
     ],
     "Healthcare": [
@@ -186,3 +186,21 @@ def extract_technologies(*texts: str) -> list[str]:
         if any(pattern.search(haystack) for pattern in patterns):
             found.append(kw)
     return found
+
+
+# The vocabulary for a user's optional skill_level preference (see
+# app.models.user.User.skill_level and app.rag.retriever.py's ranking
+# boost) — meant to line up with problems' own `difficulty` field so the
+# two are directly comparable.
+#
+# IMPORTANT: as of this writing, no problem in the real corpus actually
+# has `difficulty` populated — app.ingestion.clean.py sets it to None with
+# a comment that it's "left for the Phase 2 enrichment pass", which was
+# never built. There is therefore no existing real vocabulary to reuse yet
+# (beginner/intermediate/advanced is a reasonable, conventional default,
+# not something scraped from real data). skill_level matching in the
+# retriever is a genuine no-op against today's corpus until some process
+# actually populates problems' difficulty field with these same values —
+# that's expected, not a bug, and is called out again where the boost is
+# computed.
+SKILL_LEVELS = ["beginner", "intermediate", "advanced"]

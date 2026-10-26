@@ -8,8 +8,8 @@ import ErrorState from "../components/ui/ErrorState.jsx";
 import { SkeletonLine } from "../components/ui/Skeleton.jsx";
 import RoadmapStage from "../components/roadmap/RoadmapStage.jsx";
 import ResourceCard from "../components/resources/ResourceCard.jsx";
-import { IconSparkle, IconArrowRight, IconDownload } from "../components/ui/icons.jsx";
-import { generatePlan, exportRoadmapPptx, apiErrorMessage } from "../api/client.js";
+import { IconSparkle, IconArrowRight, IconDownload, IconExternal } from "../components/ui/icons.jsx";
+import { generatePlan, exportFavoritePptx, viewFavoritePdf, apiErrorMessage } from "../api/client.js";
 import { useProjects, getCachedProblem, planProgress } from "../hooks/useProjects.js";
 import styles from "./Roadmap.module.css";
 
@@ -28,6 +28,8 @@ export default function Roadmap() {
   const [regenToken, setRegenToken] = useState(0);
   const [exportStatus, setExportStatus] = useState("idle"); // idle | loading | error
   const [exportError, setExportError] = useState(null);
+  const [viewStatus, setViewStatus] = useState("idle"); // idle | loading | error
+  const [viewError, setViewError] = useState(null);
 
   useEffect(() => {
     // projects load asynchronously from the backend now (unlike the old
@@ -80,17 +82,23 @@ export default function Roadmap() {
     setExportStatus("loading");
     setExportError(null);
     try {
-      await exportRoadmapPptx({
-        problemTitle: problem?.title || "Roadmap",
-        problemStatement: problem?.problem_statement || problem?.summary || "",
-        source: problem?.source,
-        hackathonName: problem?.hackathon_name,
-        plan,
-      });
+      await exportFavoritePptx(id);
       setExportStatus("idle");
     } catch (err) {
       setExportError(apiErrorMessage(err, "Could not export the PPT. Try again."));
       setExportStatus("error");
+    }
+  }
+
+  async function handleViewPdf() {
+    setViewStatus("loading");
+    setViewError(null);
+    try {
+      await viewFavoritePdf(id);
+      setViewStatus("idle");
+    } catch (err) {
+      setViewError(apiErrorMessage(err, "Could not open the PPT. Try again."));
+      setViewStatus("error");
     }
   }
 
@@ -180,6 +188,35 @@ export default function Roadmap() {
                 <EmptyState title="No roadmap stages returned" description="Try regenerating the roadmap." />
               )}
 
+              <section className={["be-crop", styles.pptCard].join(" ")}>
+                <h3 className={styles.sideTitle}>Your roadmap as a PPT</h3>
+                <p className={styles.pptNote}>
+                  Generated once and saved — opening or downloading it again later is instant.
+                </p>
+                <div className={styles.pptActions}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleViewPdf}
+                    disabled={viewStatus === "loading"}
+                    icon={<IconExternal width={15} height={15} />}
+                  >
+                    {viewStatus === "loading" ? "Opening…" : "View PPT"}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleExportPptx}
+                    disabled={exportStatus === "loading"}
+                    icon={<IconDownload width={15} height={15} />}
+                  >
+                    {exportStatus === "loading" ? "Preparing…" : "Download PPT"}
+                  </Button>
+                </div>
+                {viewStatus === "error" && <p className={styles.localNote}>{viewError}</p>}
+                {exportStatus === "error" && <p className={styles.localNote}>{exportError}</p>}
+              </section>
+
               {(plan.existing_solutions?.length > 0 || plan.differentiation_ideas?.length > 0) && (
                 <section className={styles.competitive}>
                   <h3 className={styles.sideTitle}>Existing solutions &amp; differentiation</h3>
@@ -228,18 +265,6 @@ export default function Roadmap() {
               )}
 
               <div className="be-dim" />
-
-              <Button
-                variant="secondary"
-                size="sm"
-                fullWidth
-                onClick={handleExportPptx}
-                disabled={exportStatus === "loading"}
-                icon={<IconDownload width={15} height={15} />}
-              >
-                {exportStatus === "loading" ? "Preparing PPT…" : "Export as PPT"}
-              </Button>
-              {exportStatus === "error" && <p className={styles.localNote}>{exportError}</p>}
 
               <Button
                 to="/projects"

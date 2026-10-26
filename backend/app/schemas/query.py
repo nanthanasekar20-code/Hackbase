@@ -26,11 +26,25 @@ class RankedResult(BaseModel):
     difficulty: Optional[str] = None
     summary: str
     score: float
-    # Resume Value Score breakdown — populated by the Phase 2 enrichment
-    # pass, not required to be present yet.
+    # Gemini enrichment scores (scripts/enrich_resume_value.py) — all nine
+    # share one 0-10 scale, None until that problem's been enriched (batch
+    # or lazy-on-save). hardware_requirement_score is the one field where
+    # higher isn't "better", just "needs more specialized hardware".
     resume_value_score: Optional[float] = None
     industry_relevance_score: Optional[float] = None
     technical_depth_score: Optional[float] = None
+    novelty_score: Optional[float] = None
+    dataset_availability_score: Optional[float] = None
+    hardware_requirement_score: Optional[float] = None
+    competition_potential_score: Optional[float] = None
+    social_impact_score: Optional[float] = None
+    feasibility_score: Optional[float] = None
+    # ISO date this problem was first seen (see app.schemas.problem
+    # .ProcessedProblem.first_seen_at). Optional/None for any older record
+    # indexed before this field existed — the frontend only renders a
+    # "New" badge when it's actually present and recent, never fabricates
+    # recency for a problem that doesn't carry the field yet.
+    first_seen_at: Optional[str] = None
 
 
 class QueryResponse(BaseModel):

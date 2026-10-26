@@ -25,14 +25,37 @@ export const loginUser = (email, password) =>
 
 export const getCurrentUser = () => client.get("/auth/me").then((res) => res.data);
 
-// patch: { full_name?, email?, new_password?, current_password? } — email
-// or new_password changes require current_password (see UserUpdate).
+// patch: { full_name?, email?, new_password?, current_password?,
+// interests?, skill_level? } — email or new_password changes require
+// current_password (see UserUpdate); interests/skill_level don't.
+// interests: [] and skill_level: "" explicitly clear those two (see
+// UserUpdate's docstring) — omitting a key entirely leaves it unchanged.
 export const updateProfile = (patch) => client.patch("/auth/me", patch).then((res) => res.data);
+
+export const verifyPassword = (currentPassword) =>
+  client.post("/auth/verify-password", { current_password: currentPassword }).then((res) => res.data);
+
+export const forgotPassword = (email) => client.post("/auth/forgot-password", { email }).then((res) => res.data);
+
+export const resetPassword = (token, newPassword) =>
+  client.post("/auth/reset-password", { token, new_password: newPassword }).then((res) => res.data);
 
 export const apiErrorMessage = (err, fallback = "Something went wrong.") => err?.response?.data?.detail || fallback;
 
 export const searchHackathons = (query, topK = 5) =>
   client.post("/search", { query, top_k: topK }).then((res) => res.data);
+
+// Non-RAG reads over the problem corpus (see backend app/api/routes/
+// problems.py) — a genuinely reshuffled random sample (Home's "Refresh"
+// on Featured) and a flat paginated browse-all ("Explore all"). Neither
+// goes through the search/ranking agents, so results carry no `score`.
+export const getRandomProblems = (count = 6) =>
+  client.get("/problems/random", { params: { count } }).then((res) => res.data);
+
+export const getProblems = ({ page = 1, pageSize = 20, domain, source, category, difficulty } = {}) =>
+  client
+    .get("/problems", { params: { page, page_size: pageSize, domain, source, category, difficulty } })
+    .then((res) => res.data);
 
 // Dedupes concurrent calls for the exact same problem statement into one
 // real network request, keyed by module scope (not component state) so it
@@ -60,23 +83,16 @@ export const generatePlan = (problemStatement) => {
   return request;
 };
 
-// Formats a plan the frontend already has into a downloadable .pptx —
-// see backend app/services/pptx_builder.py. Deliberately sends the plan
-// itself as the request body rather than a problem id, so the backend
-// never needs to re-run the Planning Agent (no extra Gemini call per
-// export). Triggers a real browser file download from the returned blob.
-export const exportRoadmapPptx = async ({ problemTitle, problemStatement, source, hackathonName, plan }) => {
-  const response = await client.post(
-    "/plan/export-pptx",
-    {
-      problem_title: problemTitle,
-      problem_statement: problemStatement || "",
-      source: source || null,
-      hackathon_name: hackathonName || null,
-      plan,
-    },
-    { responseType: "blob" }
-  );
+// Downloads the .pptx for a saved project's roadmap — see backend
+// GET /favorites/{problem_id}/export-pptx. Generated once there and
+// cached on the favorite row, so calling this again later (from My
+// Projects, Problem Details, or Roadmap) re-downloads the same file
+// instantly instead of rebuilding it. Requires the project to already
+// have a saved plan (favorite.plan set via updateFavorite/savePlan).
+export const exportFavoritePptx = async (problemId) => {
+  const response = await client.get(`/favorites/${encodeURIComponent(problemId)}/export-pptx`, {
+    responseType: "blob",
+  });
 
   const disposition = response.headers["content-disposition"] || "";
   const match = disposition.match(/filename="?([^"]+)"?/);
@@ -92,10 +108,36 @@ export const exportRoadmapPptx = async ({ problemTitle, problemStatement, source
   window.URL.revokeObjectURL(url);
 };
 
+// Opens a saved project's roadmap in-browser (the "View PPT" action) —
+// see backend GET /favorites/{problem_id}/view-pdf. Browsers can't render
+// .pptx natively, so that endpoint serves a real PDF rendering of the same
+// plan content instead; this fetches it as an authenticated blob (a plain
+// <a>/window.open to the URL wouldn't carry the auth header) and opens it
+// in a new tab, where the browser's own PDF viewer takes over. The object
+// URL is revoked after a minute — long enough for the new tab to finish
+// loading it, short enough not to leak memory indefinitely.
+export const viewFavoritePdf = async (problemId) => {
+  const response = await client.get(`/favorites/${encodeURIComponent(problemId)}/view-pdf`, {
+    responseType: "blob",
+  });
+  const url = window.URL.createObjectURL(response.data);
+  window.open(url, "_blank", "noopener,noreferrer");
+  setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
+};
+
 // Phase 7: real MLflow run history for the Planning Agent and Resume
 // Value enrichment experiments — see backend app/api/routes/tracking.py.
 export const getTrackingRuns = (limit = 20) =>
   client.get("/tracking/runs", { params: { limit } }).then((res) => res.data);
+
+// "Live Hackathons" feed — hackathons currently open for registration,
+// scraped separately from the problem-statement corpus (see backend
+// scripts/run_live_hackathons.py). Just a periodically-refreshed JSON
+// read, no live scrape per request. source/search are optional (used by
+// the fuller /live-hackathons page's filter bar) — the Home teaser's
+// no-arg call is unaffected either way.
+export const getLiveHackathons = ({ source, search } = {}) =>
+  client.get("/live-hackathons", { params: { source, search } }).then((res) => res.data);
 
 // --- Favorites / "My Projects" (see backend app/api/routes/favorites.py) ---
 // A user's real, server-backed saved problems, generated roadmaps, and

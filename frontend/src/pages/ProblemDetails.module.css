@@ -95,10 +95,61 @@
   font-size: 0.8rem;
 }
 
-.portfolioRow {
-  display: flex;
-  gap: 32px;
-  flex-wrap: wrap;
+.scoreTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scoreTable tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.scoreTable tr:last-child {
+  border-bottom: none;
+}
+
+.scoreTableLabel {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.86rem;
+  padding: 10px 16px 10px 0;
+  white-space: nowrap;
+}
+
+.scoreTableBarCell {
+  width: 100%;
+  padding: 10px 0;
+}
+
+.scoreTableBarTrack {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.scoreTableBarFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--sky-deep);
+}
+
+/* hardware_requirement_score — a longer bar means "needs more
+   specialized hardware", not "better", so it gets a visually distinct
+   (warning-toned) fill instead of the same color as every "higher is
+   better" row above it. */
+.scoreTableBarFillInverted {
+  background: var(--warning);
+}
+
+.scoreTableValue {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 10px 0 10px 16px;
+  white-space: nowrap;
 }
 
 .side {

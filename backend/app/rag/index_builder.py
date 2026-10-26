@@ -62,7 +62,21 @@ def _embed_text(problem: dict) -> str:
     return f"{title}. {summary}".strip()
 
 
-RESUME_VALUE_FIELDS = ("resume_value_score", "industry_relevance_score", "technical_depth_score")
+# All nine Gemini enrichment scores (scripts/enrich_resume_value.py) — see
+# that script's SCORE_FIELDS, kept in sync with this tuple by hand (no
+# shared import: index_builder.py and the enrichment script are meant to
+# stay independently runnable without pulling each other in).
+ENRICHMENT_SCORE_FIELDS = (
+    "resume_value_score",
+    "industry_relevance_score",
+    "technical_depth_score",
+    "novelty_score",
+    "dataset_availability_score",
+    "hardware_requirement_score",
+    "competition_potential_score",
+    "social_impact_score",
+    "feasibility_score",
+)
 
 
 def _metadata(problem: dict) -> dict:
@@ -79,15 +93,21 @@ def _metadata(problem: dict) -> dict:
         "difficulty": problem.get("difficulty") or "",
         "summary": problem.get("summary") or "",
     }
-    # Resume Value enrichment scores (scripts/enrich_resume_value.py) — a
-    # problem that hasn't been scored yet has these as None, and Chroma
-    # metadata can't hold None, so the key is omitted entirely rather than
-    # written as a fake 0. The retriever reads it back with plain dict.get,
-    # which is already None-safe for a missing key.
-    for field in RESUME_VALUE_FIELDS:
+    # Gemini enrichment scores — a problem that hasn't been scored yet has
+    # these as None, and Chroma metadata can't hold None, so the key is
+    # omitted entirely rather than written as a fake 0. The retriever reads
+    # it back with plain dict.get, which is already None-safe for a
+    # missing key.
+    for field in ENRICHMENT_SCORE_FIELDS:
         value = problem.get(field)
         if value is not None:
             metadata[field] = float(value)
+    # Same None-omission handling for first_seen_at (see
+    # app.schemas.problem.ProcessedProblem.first_seen_at) — older problems
+    # indexed before this field existed simply won't have the key.
+    first_seen_at = problem.get("first_seen_at")
+    if first_seen_at:
+        metadata["first_seen_at"] = first_seen_at
     return metadata
 
 

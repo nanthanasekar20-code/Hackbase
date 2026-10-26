@@ -112,6 +112,28 @@
   color: var(--sky-deep);
 }
 
+.clearBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin: 40px 0 16px;
+}
+
+.pageInfo {
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
 /* ---- Result entries — large editorial rows, not cards ---- */
 
 .entries {
@@ -127,7 +149,9 @@
   border-bottom: 1px solid var(--border);
   border-left: 3px solid var(--lab-violet);
   cursor: pointer;
-  background: none;
+  /* A translucent paper backdrop — the photo texture behind it is busy
+     enough to hurt legibility of the title/summary text without one. */
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
   transition: background var(--fast) var(--ease);
 }
 
@@ -167,8 +191,8 @@
 .entrySummary {
   margin: 14px 0 0;
   max-width: 62ch;
-  font-size: 0.94rem;
-  color: var(--ink-soft);
+  font-size: 0.97rem;
+  color: var(--ink);
 }
 
 .entryDivider {
@@ -193,13 +217,18 @@
 .statValue {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   line-height: 1;
   color: var(--lab-lime);
 }
 
+/* Resume/portfolio value — called out bigger and bolder than Match%,
+   since it's the number people actually care about when picking what to
+   build for their resume. */
 .statValue.violet {
   color: var(--sky-deep);
+  font-size: 2.6rem;
+  letter-spacing: -0.01em;
 }
 
 .statLabel {

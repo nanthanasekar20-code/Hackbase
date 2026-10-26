@@ -16,14 +16,12 @@ export default function Footer() {
         <nav className={styles.links} aria-label="Footer">
           <Link to="/discover">Discover</Link>
           <Link to="/projects">My Projects</Link>
-          <Link to="/roadmaps">Roadmaps</Link>
-          <Link to="/resources">Resources</Link>
           <Link to="/how-it-works">How It Works</Link>
         </nav>
       </div>
       <div className={[styles.bottom, "container"].join(" ")}>
-        <span>Built for the SIH / hackathon build cycle.</span>
-        <span className="mono">v0.2 · design refresh</span>
+
+    
       </div>
     </footer>
   );

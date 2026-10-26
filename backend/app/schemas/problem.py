@@ -64,8 +64,25 @@ class ProcessedProblem(BaseModel):
     skills: list[str] = Field(default_factory=list)
     difficulty: Optional[str] = None
     url: Optional[str] = None
-    # Populated by the Phase 2 Gemini enrichment pass — intentionally absent
-    # from the pipeline this round.
+    # Populated by the Gemini enrichment pass (scripts/enrich_resume_value.py)
+    # — null until that's run for a given problem (batch, or lazily on save
+    # via app/api/routes/favorites.py). All nine share one 0-10 scale; see
+    # enrich_resume_value.py's PROMPT_TEMPLATE for exact definitions.
+    # hardware_requirement_score is the one field where higher isn't
+    # "better" — it just means more specialized hardware is needed.
     resume_value_score: Optional[float] = None
     industry_relevance_score: Optional[float] = None
     technical_depth_score: Optional[float] = None
+    novelty_score: Optional[float] = None
+    dataset_availability_score: Optional[float] = None
+    hardware_requirement_score: Optional[float] = None
+    competition_potential_score: Optional[float] = None
+    social_impact_score: Optional[float] = None
+    feasibility_score: Optional[float] = None
+    # ISO date (YYYY-MM-DD) this problem's id was first seen in
+    # data/processed/problems.json. Set once and preserved by id across
+    # every rebuild (see scripts/build_corpus.py's _restore_first_seen_dates)
+    # — never touched again after that, so it stays a stable "when did this
+    # first show up" fact rather than a "last rebuilt" timestamp. Powers
+    # the frontend's "New" badge (see app.schemas.query.RankedResult).
+    first_seen_at: Optional[str] = None

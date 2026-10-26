@@ -6,14 +6,22 @@ password hashing and token round-tripping are exactly the things that
 must genuinely work, not just look plausible.
 """
 
+import io
 import json
+from datetime import datetime, timedelta, timezone
 
+import jwt
 import pytest
 from fastapi.testclient import TestClient
+from pptx import Presentation
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import app.core.corpus as corpus_module
+from app.api.routes import auth as auth_routes
+from app.core.config import settings
+from app.core.email import EmailNotConfiguredError
+from app.core.security import PASSWORD_RESET_PURPOSE
 from app.db.session import Base, get_db
 from app.main import app
 from app.models.user import User
@@ -187,6 +195,79 @@ def test_update_me_changes_password_and_new_password_works_for_login(client):
     assert resp.status_code == 200
 
 
+# --- Optional personalization (interests/skill_level) on PATCH /auth/me
+# — entirely opt-in; see UserUpdate's docstring for the []/"" clear
+# sentinels and app/rag/retriever.py for where these actually get used.
+
+
+def test_new_user_has_no_personalization_set(client):
+    headers = _register_and_login(client)
+    resp = client.get("/api/v1/auth/me", headers=headers)
+    assert resp.json()["interests"] == []
+    assert resp.json()["skill_level"] is None
+
+
+def test_update_me_sets_interests_and_skill_level(client):
+    headers = _register_and_login(client)
+    resp = client.patch(
+        "/api/v1/auth/me",
+        json={"interests": ["Healthcare", "AI/ML"], "skill_level": "advanced"},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["interests"] == ["Healthcare", "AI/ML"]
+    assert resp.json()["skill_level"] == "advanced"
+
+
+def test_update_me_requires_no_current_password_for_personalization(client):
+    """Unlike email/password, these aren't login credentials — no reason
+    to gate them behind current_password."""
+    headers = _register_and_login(client)
+    resp = client.patch("/api/v1/auth/me", json={"interests": ["FinTech"]}, headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()["interests"] == ["FinTech"]
+
+
+def test_update_me_rejects_an_interest_outside_the_taxonomy(client):
+    headers = _register_and_login(client)
+    resp = client.patch("/api/v1/auth/me", json={"interests": ["Not A Real Domain"]}, headers=headers)
+    assert resp.status_code == 422
+
+
+def test_update_me_rejects_a_skill_level_outside_the_vocabulary(client):
+    headers = _register_and_login(client)
+    resp = client.patch("/api/v1/auth/me", json={"skill_level": "expert"}, headers=headers)
+    assert resp.status_code == 422
+
+
+def test_update_me_omitting_personalization_leaves_it_unchanged(client):
+    headers = _register_and_login(client)
+    client.patch("/api/v1/auth/me", json={"interests": ["FinTech"], "skill_level": "advanced"}, headers=headers)
+
+    resp = client.patch("/api/v1/auth/me", json={"full_name": "Alice B."}, headers=headers)
+
+    assert resp.json()["interests"] == ["FinTech"]
+    assert resp.json()["skill_level"] == "advanced"
+
+
+def test_update_me_clears_interests_with_an_empty_list(client):
+    headers = _register_and_login(client)
+    client.patch("/api/v1/auth/me", json={"interests": ["FinTech"]}, headers=headers)
+
+    resp = client.patch("/api/v1/auth/me", json={"interests": []}, headers=headers)
+
+    assert resp.json()["interests"] == []
+
+
+def test_update_me_clears_skill_level_with_an_empty_string(client):
+    headers = _register_and_login(client)
+    client.patch("/api/v1/auth/me", json={"skill_level": "advanced"}, headers=headers)
+
+    resp = client.patch("/api/v1/auth/me", json={"skill_level": ""}, headers=headers)
+
+    assert resp.json()["skill_level"] is None
+
+
 def test_favorites_require_authentication(client):
     resp = client.get("/api/v1/favorites")
     assert resp.status_code == 401
@@ -211,6 +292,88 @@ def test_add_and_list_favorite_hydrates_from_corpus(client):
     favorites = resp.json()
     assert len(favorites) == 1
     assert favorites[0]["problem_id"] == "sih:p1"
+
+
+def _set_corpus(tmp_path, monkeypatch, problems):
+    path = tmp_path / "problems_override.json"
+    path.write_text(json.dumps(problems), encoding="utf-8")
+    monkeypatch.setattr(corpus_module, "PROCESSED_PATH", path)
+    corpus_module.reset_cache()
+
+
+def test_add_favorite_triggers_background_enrichment_when_problem_is_unscored(client, tmp_path, monkeypatch):
+    _set_corpus(tmp_path, monkeypatch, [{"id": "sih:p1", "title": "A problem", "summary": "s", "domain": []}])
+
+    import scripts.enrich_resume_value as enrich_module
+
+    calls = []
+    monkeypatch.setattr(enrich_module, "enrich_one", lambda problem_id: calls.append(problem_id) or False)
+
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+
+    assert calls == ["sih:p1"]
+
+
+def test_add_favorite_skips_background_enrichment_when_problem_is_fully_scored(client, tmp_path, monkeypatch):
+    from scripts.enrich_resume_value import SCORE_FIELDS
+
+    _set_corpus(
+        tmp_path,
+        monkeypatch,
+        [
+            {
+                "id": "sih:p1",
+                "title": "A problem",
+                "summary": "s",
+                "domain": [],
+                **{field: 5.0 for field in SCORE_FIELDS},
+            }
+        ],
+    )
+
+    import scripts.enrich_resume_value as enrich_module
+
+    calls = []
+    monkeypatch.setattr(enrich_module, "enrich_one", lambda problem_id: calls.append(problem_id) or False)
+
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+
+    assert calls == []
+
+
+def test_add_favorite_triggers_background_enrichment_when_problem_is_only_partially_scored(client, tmp_path, monkeypatch):
+    """Regression test for the bug Fix 2 targets: a problem scored before
+    the six newer score fields existed has resume_value_score set but is
+    missing the rest — (re-)saving it must still trigger enrichment,
+    instead of the old "resume_value_score is None" check wrongly
+    treating it as permanently done."""
+    _set_corpus(
+        tmp_path,
+        monkeypatch,
+        [
+            {
+                "id": "sih:p1",
+                "title": "A problem",
+                "summary": "s",
+                "domain": [],
+                "resume_value_score": 8.0,
+                "industry_relevance_score": 7.0,
+                "technical_depth_score": 9.0,
+            }
+        ],
+    )
+
+    import scripts.enrich_resume_value as enrich_module
+
+    calls = []
+    monkeypatch.setattr(enrich_module, "enrich_one", lambda problem_id: calls.append(problem_id) or False)
+
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+
+    assert calls == ["sih:p1"]
 
 
 def test_update_favorite_status(client):
@@ -346,3 +509,256 @@ def test_favorites_are_scoped_per_user(client):
 
     assert client.get("/api/v1/favorites", headers=alice_headers).json() != []
     assert client.get("/api/v1/favorites", headers=bob_headers).json() == []
+
+
+# --- verify-password (Profile page's gate before showing new-password fields) ---
+
+
+def test_verify_password_requires_authentication(client):
+    resp = client.post("/api/v1/auth/verify-password", json={"current_password": "whatever"})
+    assert resp.status_code == 401
+
+
+def test_verify_password_accepts_correct_password(client):
+    headers = _register_and_login(client)
+    resp = client.post(
+        "/api/v1/auth/verify-password", json={"current_password": "correct-horse-battery"}, headers=headers
+    )
+    assert resp.status_code == 200
+
+
+def test_verify_password_rejects_wrong_password(client):
+    headers = _register_and_login(client)
+    resp = client.post("/api/v1/auth/verify-password", json={"current_password": "nope"}, headers=headers)
+    assert resp.status_code == 401
+
+
+# --- forgot-password / reset-password ---
+
+
+def test_forgot_password_unknown_email_returns_generic_message_without_sending(client, monkeypatch):
+    calls = []
+    monkeypatch.setattr(auth_routes, "send_email", lambda **kw: calls.append(kw))
+
+    resp = client.post("/api/v1/auth/forgot-password", json={"email": "nobody@example.com"})
+    assert resp.status_code == 200
+    assert "reset link has been sent" in resp.json()["message"]
+    assert calls == []  # never attempted — nothing to email
+
+
+def test_forgot_password_known_email_sends_email_with_reset_link(client, monkeypatch):
+    calls = []
+    monkeypatch.setattr(auth_routes, "send_email", lambda **kw: calls.append(kw))
+    _register_and_login(client, email="dana@example.com")
+
+    resp = client.post("/api/v1/auth/forgot-password", json={"email": "dana@example.com"})
+    assert resp.status_code == 200
+    assert "reset link has been sent" in resp.json()["message"]
+    assert len(calls) == 1
+    assert calls[0]["to"] == "dana@example.com"
+    assert "reset-password?token=" in calls[0]["body"]
+
+
+def test_forgot_password_returns_503_when_email_not_configured_for_known_user(client, monkeypatch):
+    def _raise(**kw):
+        raise EmailNotConfiguredError("Email sending is not configured on this server.")
+
+    monkeypatch.setattr(auth_routes, "send_email", _raise)
+    _register_and_login(client, email="erin@example.com")
+
+    resp = client.post("/api/v1/auth/forgot-password", json={"email": "erin@example.com"})
+    assert resp.status_code == 503
+
+
+def test_reset_password_with_valid_token_changes_password_and_logs_in(client, monkeypatch):
+    captured = {}
+    monkeypatch.setattr(auth_routes, "send_email", lambda **kw: captured.update(kw))
+    _register_and_login(client, email="frank@example.com")
+    client.post("/api/v1/auth/forgot-password", json={"email": "frank@example.com"})
+
+    token = captured["body"].split("token=")[1].split("\n")[0].strip()
+    resp = client.post("/api/v1/auth/reset-password", json={"token": token, "new_password": "brand-new-pw-1"})
+    assert resp.status_code == 200
+
+    # old password no longer works, new one does
+    resp = client.post("/api/v1/auth/login", json={"email": "frank@example.com", "password": "correct-horse-battery"})
+    assert resp.status_code == 401
+    resp = client.post("/api/v1/auth/login", json={"email": "frank@example.com", "password": "brand-new-pw-1"})
+    assert resp.status_code == 200
+
+
+def test_reset_password_rejects_garbage_token(client):
+    resp = client.post("/api/v1/auth/reset-password", json={"token": "not-a-real-token", "new_password": "whatever1"})
+    assert resp.status_code == 400
+
+
+def test_reset_password_rejects_expired_token(client):
+    _register_and_login(client, email="grace@example.com")
+    expired = jwt.encode(
+        {
+            "sub": "grace@example.com",
+            "purpose": PASSWORD_RESET_PURPOSE,
+            "exp": datetime.now(timezone.utc) - timedelta(minutes=1),
+        },
+        settings.jwt_secret_key,
+        algorithm=settings.jwt_algorithm,
+    )
+    resp = client.post("/api/v1/auth/reset-password", json={"token": expired, "new_password": "whatever1"})
+    assert resp.status_code == 400
+
+
+def test_reset_password_rejects_a_normal_access_token(client):
+    """An ordinary login session token has no `purpose` claim — it must not double as a reset token."""
+    headers = _register_and_login(client, email="henry@example.com")
+    access_token = headers["Authorization"].split(" ")[1]
+    resp = client.post(
+        "/api/v1/auth/reset-password", json={"token": access_token, "new_password": "whatever1"}
+    )
+    assert resp.status_code == 400
+
+
+# --- GET /favorites/{problem_id}/export-pptx — cached-on-the-row PPT export ---
+
+MINIMAL_PLAN = {
+    "problem_understanding": "Farmers need to detect crop disease early from photos.",
+    "tech_stack": ["Python", "TensorFlow"],
+    "architecture": "A mobile app uploads photos to an API running a CNN classifier.",
+    "roadmap": [{"phase": "MVP", "tasks": ["Train baseline model"], "milestones": []}],
+    "deliverables": ["Working demo"],
+    "resources": [],
+}
+
+
+def test_export_pptx_requires_authentication(client):
+    resp = client.get("/api/v1/favorites/sih:p1/export-pptx")
+    assert resp.status_code == 401
+
+
+def test_export_pptx_404_when_not_favorited(client):
+    headers = _register_and_login(client)
+    resp = client.get("/api/v1/favorites/sih:p1/export-pptx", headers=headers)
+    assert resp.status_code == 404
+
+
+def test_export_pptx_404_when_favorited_but_no_plan_yet(client):
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+    resp = client.get("/api/v1/favorites/sih:p1/export-pptx", headers=headers)
+    assert resp.status_code == 404
+
+
+def test_export_pptx_generates_a_valid_presentation_and_marks_has_pptx(client):
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+    client.patch("/api/v1/favorites/sih:p1", json={"plan": MINIMAL_PLAN}, headers=headers)
+
+    # Not yet generated — the save above doesn't eagerly build one.
+    favorites = client.get("/api/v1/favorites", headers=headers).json()
+    assert favorites[0]["has_pptx"] is False
+
+    resp = client.get("/api/v1/favorites/sih:p1/export-pptx", headers=headers)
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == (
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    )
+    prs = Presentation(io.BytesIO(resp.content))
+    assert len(prs.slides) > 0
+
+    favorites = client.get("/api/v1/favorites", headers=headers).json()
+    assert favorites[0]["has_pptx"] is True
+
+
+def test_export_pptx_second_call_reuses_the_cached_copy(client):
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+    client.patch("/api/v1/favorites/sih:p1", json={"plan": MINIMAL_PLAN}, headers=headers)
+
+    first = client.get("/api/v1/favorites/sih:p1/export-pptx", headers=headers)
+    second = client.get("/api/v1/favorites/sih:p1/export-pptx", headers=headers)
+    assert first.content == second.content  # byte-identical — the second call served the cached copy
+
+
+def test_saving_a_new_plan_invalidates_the_cached_pptx(client):
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+    client.patch("/api/v1/favorites/sih:p1", json={"plan": MINIMAL_PLAN}, headers=headers)
+    client.get("/api/v1/favorites/sih:p1/export-pptx", headers=headers)
+
+    favorites = client.get("/api/v1/favorites", headers=headers).json()
+    assert favorites[0]["has_pptx"] is True
+
+    regenerated_plan = {**MINIMAL_PLAN, "problem_understanding": "A regenerated roadmap."}
+    client.patch("/api/v1/favorites/sih:p1", json={"plan": regenerated_plan}, headers=headers)
+
+    favorites = client.get("/api/v1/favorites", headers=headers).json()
+    assert favorites[0]["has_pptx"] is False  # cleared — stale PPT for the old plan must not be served
+
+    # Still works — regenerates lazily for the new plan.
+    resp = client.get("/api/v1/favorites/sih:p1/export-pptx", headers=headers)
+    assert resp.status_code == 200
+
+
+# --- GET /favorites/{problem_id}/view-pdf — "View PPT" in-browser ---
+
+
+def test_view_pdf_requires_authentication(client):
+    resp = client.get("/api/v1/favorites/sih:p1/view-pdf")
+    assert resp.status_code == 401
+
+
+def test_view_pdf_404_when_not_favorited(client):
+    headers = _register_and_login(client)
+    resp = client.get("/api/v1/favorites/sih:p1/view-pdf", headers=headers)
+    assert resp.status_code == 404
+
+
+def test_view_pdf_404_when_favorited_but_no_plan_yet(client):
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+    resp = client.get("/api/v1/favorites/sih:p1/view-pdf", headers=headers)
+    assert resp.status_code == 404
+
+
+def test_view_pdf_generates_a_real_pdf_inline_and_marks_has_pdf(client):
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+    client.patch("/api/v1/favorites/sih:p1", json={"plan": MINIMAL_PLAN}, headers=headers)
+
+    favorites = client.get("/api/v1/favorites", headers=headers).json()
+    assert favorites[0]["has_pdf"] is False
+
+    resp = client.get("/api/v1/favorites/sih:p1/view-pdf", headers=headers)
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == "application/pdf"
+    # inline, not attachment — opens in the browser's own viewer rather than downloading
+    assert resp.headers["content-disposition"].startswith("inline")
+    assert resp.content[:4] == b"%PDF"
+
+    favorites = client.get("/api/v1/favorites", headers=headers).json()
+    assert favorites[0]["has_pdf"] is True
+
+
+def test_view_pdf_second_call_reuses_the_cached_copy(client):
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+    client.patch("/api/v1/favorites/sih:p1", json={"plan": MINIMAL_PLAN}, headers=headers)
+
+    first = client.get("/api/v1/favorites/sih:p1/view-pdf", headers=headers)
+    second = client.get("/api/v1/favorites/sih:p1/view-pdf", headers=headers)
+    assert first.content == second.content
+
+
+def test_saving_a_new_plan_invalidates_the_cached_pdf_too(client):
+    headers = _register_and_login(client)
+    client.post("/api/v1/favorites", json={"problem_id": "sih:p1"}, headers=headers)
+    client.patch("/api/v1/favorites/sih:p1", json={"plan": MINIMAL_PLAN}, headers=headers)
+    client.get("/api/v1/favorites/sih:p1/view-pdf", headers=headers)
+
+    regenerated_plan = {**MINIMAL_PLAN, "problem_understanding": "A regenerated roadmap."}
+    client.patch("/api/v1/favorites/sih:p1", json={"plan": regenerated_plan}, headers=headers)
+
+    favorites = client.get("/api/v1/favorites", headers=headers).json()
+    assert favorites[0]["has_pdf"] is False
+
+    resp = client.get("/api/v1/favorites/sih:p1/view-pdf", headers=headers)
+    assert resp.status_code == 200

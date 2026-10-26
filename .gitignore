@@ -20,6 +20,13 @@ data/processed/*
 !data/processed/.gitkeep
 mlflow/*
 !mlflow/.gitkeep
+# The pair above is root-anchored (contains a "/", so git only matches it
+# at the repo root) and misses backend/mlflow/ — the directory MLflow
+# actually writes to when the backend runs from backend/ (see
+# app/core/tracking.py). Real incident: 973 experiment-run files sat
+# untracked here, one `git add -A` away from being committed.
+backend/mlflow/*
+!backend/mlflow/.gitkeep
 
 # Database (generated locally, not source code)
 *.db

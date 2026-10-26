@@ -37,6 +37,60 @@
   border-color: var(--sky);
 }
 
+.passwordRow {
+  position: relative;
+  display: flex;
+}
+
+.passwordRow input {
+  flex: 1;
+  padding-right: 42px;
+}
+
+.eyeToggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+
+.eyeToggle:hover {
+  color: var(--ink-soft);
+}
+
+.eyeToggle:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 1px;
+}
+
+.linkRow {
+  display: flex;
+  justify-content: flex-end;
+  margin: -10px 0 18px;
+}
+
+.linkRow a {
+  font-size: 0.82rem;
+  color: var(--sky-deep);
+  font-weight: 600;
+}
+
+.hint {
+  margin: 0 0 18px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
 .error {
   margin: 0 0 16px;
   padding: 10px 14px;

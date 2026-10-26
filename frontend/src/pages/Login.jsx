@@ -4,6 +4,7 @@ import Card from "../components/ui/Card.jsx";
 import Button from "../components/ui/Button.jsx";
 import { useAuth } from "../hooks/useAuth.js";
 import { apiErrorMessage } from "../api/client.js";
+import { IconEye, IconEyeOff } from "../components/ui/icons.jsx";
 import styles from "./AuthForm.module.css";
 
 export default function Login() {
@@ -13,6 +14,7 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -59,14 +61,29 @@ export default function Login() {
 
               <div className={styles.field}>
                 <label htmlFor="password">Password</label>
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className={styles.passwordRow}>
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className={styles.eyeToggle}
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? <IconEyeOff width={18} height={18} /> : <IconEye width={18} height={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.linkRow}>
+                <Link to="/forgot-password">Forgot password?</Link>
               </div>
 
               <Button type="submit" fullWidth disabled={submitting}>

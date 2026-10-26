@@ -41,18 +41,3 @@ class PlanResponse(BaseModel):
     scalability: Optional[str] = None
     cost_effectiveness: Optional[str] = None
     resources: list[Resource]
-
-
-class PptxExportRequest(BaseModel):
-    """
-    Formats an already-generated plan into a .pptx — see
-    app/services/pptx_builder.py. Takes the plan the frontend already has
-    (from a prior /plan call) rather than regenerating it, so exporting a
-    PPT makes no additional Gemini calls.
-    """
-
-    problem_title: str
-    problem_statement: str = ""
-    source: Optional[str] = None
-    hackathon_name: Optional[str] = None
-    plan: PlanResponse
