@@ -1,11 +1,13 @@
 import axios from "axios";
 import { getAuthToken } from "../utils/authToken.js";
 
-// Preserved exactly from the original scaffold — same baseURL, same
-// endpoints, same request/response shapes. Do not change without a matching
-// backend change.
+// In dev, baseURL stays relative ("/api/v1") and Vite's server.proxy (see
+// vite.config.js) forwards it to the local backend. A production build has
+// no such proxy, so it needs VITE_API_BASE_URL baked in at build time (see
+// .env.production) pointing at the deployed backend's full /api/v1 URL —
+// set via Vite's import.meta.env, never hardcoded here.
 const client = axios.create({
-  baseURL: "/api/v1",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api/v1",
 });
 
 client.interceptors.request.use((config) => {
