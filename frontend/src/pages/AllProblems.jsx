@@ -7,6 +7,7 @@ import ErrorState from "../components/ui/ErrorState.jsx";
 import { SkeletonCard } from "../components/ui/Skeleton.jsx";
 import { IconArrowRight } from "../components/ui/icons.jsx";
 import { getProblems } from "../api/client.js";
+import { cacheProblem } from "../hooks/useProjects.js";
 import styles from "./AllProblems.module.css";
 
 const PAGE_SIZE = 20;
@@ -30,7 +31,15 @@ export default function AllProblems() {
     getProblems({ page, pageSize: PAGE_SIZE })
       .then((data) => {
         if (cancelled) return;
-        setState({ status: "done", problems: data?.problems || [], total: data?.total || 0 });
+        const problems = data?.problems || [];
+        // Without this, ProblemDetails has nothing to fall back on when
+        // React Router's location.state isn't available — opening a card
+        // in a new tab, or landing on /problem/:id after a page refresh —
+        // and shows "We couldn't find that problem" even though it's
+        // right there in the corpus. Discover.jsx already does this on
+        // every result it fetches; this page was the one gap.
+        problems.forEach(cacheProblem);
+        setState({ status: "done", problems, total: data?.total || 0 });
       })
       .catch(() => {
         if (cancelled) return;

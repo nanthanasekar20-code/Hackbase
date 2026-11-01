@@ -3,7 +3,7 @@
   padding: 56px 24px;
   border-radius: var(--r-lg);
   background: var(--danger-bg);
-  border: 1px solid rgba(189, 101, 82, 0.25);
+  border: 2px solid rgba(168, 52, 28, 0.3);
   max-width: 520px;
   margin: 0 auto;
 }

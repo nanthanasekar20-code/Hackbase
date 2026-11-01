@@ -4,6 +4,7 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import AllProblems from "./AllProblems.jsx";
 import { getProblems } from "../api/client.js";
+import { getCachedProblem } from "../hooks/useProjects.js";
 
 vi.mock("../api/client.js", () => ({
   getProblems: vi.fn(),
@@ -29,6 +30,22 @@ const PAGE_1_PROBLEMS = Array.from({ length: 20 }, (_, i) => ({
 describe("AllProblems", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it("caches every fetched problem so opening one in a new tab (or after a refresh) still finds it", async () => {
+    // Regression test for a real bug: this page never cached its results,
+    // so ProblemDetails had nothing to fall back on once React Router's
+    // location.state wasn't available (a new tab, or /problem/:id loaded
+    // directly) — "We couldn't find that problem" for one that's right
+    // there in the corpus. Discover.jsx already does this on every fetch;
+    // this was the one gap.
+    getProblems.mockResolvedValue({ page: 1, page_size: 20, total: 1, problems: [PAGE_1_PROBLEMS[0]] });
+
+    renderPage();
+    await screen.findByText("Problem 0");
+
+    expect(getCachedProblem("p0")).toEqual(expect.objectContaining({ id: "p0", title: "Problem 0" }));
   });
 
   it("renders real problems and the total count", async () => {

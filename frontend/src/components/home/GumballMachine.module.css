@@ -1,0 +1,151 @@
+.wrap {
+  margin-top: 64px;
+}
+
+.sectionHead {
+  max-width: 520px;
+  margin-bottom: 24px;
+}
+
+.sectionHead h2 {
+  margin: 10px 0 8px;
+}
+
+.machine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  max-width: 460px;
+  padding: 32px 28px;
+  border: 2.5px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.glass {
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 20px;
+  border: 2.5px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface-sunken);
+}
+
+.hint {
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}
+
+.domainPill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--r-pill);
+  background: var(--sand);
+  color: var(--paper);
+}
+
+.pickTitle {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1.25;
+  max-width: 34ch;
+}
+
+.reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.errorText {
+  color: var(--danger);
+  font-size: 0.88rem;
+}
+
+/* The ball itself — a real button, not decoration: clicking it is the
+   step that actually fetches a random problem. */
+.ball {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2.5px solid var(--border-strong);
+  background: radial-gradient(circle at 32% 28%, var(--sky-light), var(--sky) 60%);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+  animation: ball-drop 0.35s var(--ease) both;
+}
+
+.ball:hover:not(:disabled) {
+  transform: translate(-2px, -2px) scale(1.04);
+  box-shadow: var(--shadow-md);
+}
+
+.ball:active:not(:disabled) {
+  transform: translate(1px, 1px) scale(0.98);
+  box-shadow: 1px 1px 0 var(--shadow-color);
+}
+
+.ballLoading {
+  cursor: default;
+  animation: ball-spin 0.8s linear infinite;
+}
+
+.ball:disabled {
+  opacity: 0.85;
+}
+
+@keyframes ball-drop {
+  from {
+    transform: translateY(-14px) scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes ball-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ball {
+    animation: none;
+  }
+  .ballLoading {
+    animation: none;
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 540px) {
+  .machine {
+    padding: 24px 18px;
+    max-width: 100%;
+  }
+}

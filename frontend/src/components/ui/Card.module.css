@@ -1,6 +1,6 @@
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 2.5px solid var(--border-strong);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-sm);
   transition: transform var(--med) var(--ease), box-shadow var(--med) var(--ease),
@@ -13,7 +13,7 @@
 
 .interactive:hover,
 .interactive:focus-visible {
-  transform: translateY(-3px);
+  transform: translate(-2px, -2px);
   box-shadow: var(--shadow-md);
-  border-color: var(--sky-light);
+  border-color: var(--sky);
 }

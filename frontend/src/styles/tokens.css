@@ -1,52 +1,59 @@
 :root {
-  /* ---- Brand palette (given) ---- */
-  --sky: #81a6c6;
-  --sky-light: #aacddc;
-  --sand: #f3e3d0;
-  --clay: #d2c4b4;
+  /* ---- "Arcade" brand palette — warm cream ground, one red-orange
+     accent, one muted teal secondary. Every shared component (Button,
+     Card, Badge, Chip, ScoreBadge, NavBar, ...) reads color/radius/
+     shadow/font values entirely from these names, so changing them here
+     re-skins the whole app. ---- */
+  --sky: #e2502a;
+  --sky-light: #f0a98c;
+  --sky-dark: #b83e1f;
+  --sky-deep: #9c3417;
 
-  /* ---- Derived brand shades ---- */
-  --sky-dark: #5c84a8;
-  --sky-deep: #3f6483;
-  --sand-deep: #e9d1b3;
-  --clay-deep: #b9a690;
+  /* Domain-tag accent (teal) */
+  --sand: #2e6e62;
+  --sand-deep: #1f4d44;
 
-  /* ---- Neutrals (warm, not stark) ---- */
-  --ink: #232733;
-  --ink-soft: #565b6b;
-  --ink-faint: #8b8f9c;
-  --paper: #fdfbf8;
-  --surface: #ffffff;
-  --surface-sunken: #f7f2ea;
-  --border: #e8ded0;
-  --border-strong: #d8cbb8;
+  /* Difficulty-tag / decorative accent (warm terracotta) */
+  --clay: #bb7e4f;
+  --clay-deep: #8a5a35;
 
-  /* ---- Functional accents (muted, palette-consistent) ---- */
-  --success: #6f9c7d;
-  --success-bg: #e9f1e7;
-  --warning: #c99a52;
-  --warning-bg: #f7ecd9;
-  --danger: #bd6552;
-  --danger-bg: #f8e8e3;
+  /* ---- Neutrals (warm cream, not stark white) ---- */
+  --ink: #211c16;
+  --ink-soft: #5c5445;
+  --ink-faint: #8f8572;
+  --paper: #f3ecda;
+  --surface: #fffbf1;
+  --surface-sunken: #ece2c8;
+  --border: rgba(33, 28, 22, 0.22);
+  --border-strong: #211c16;
+
+  /* ---- Functional accents ---- */
+  --success: #2e6e62;
+  --success-bg: #dcefe9;
+  --warning: #8a5f1f;
+  --warning-bg: #f7ecd0;
+  --danger: #a8341c;
+  --danger-bg: #fbe3da;
 
   /* ---- Typography ---- */
-  /* Source Serif 4 / Source Sans 3 / Source Code Pro — Adobe's Source
-     superfamily, designed as a matched trio (shared proportions/x-height)
-     rather than three unrelated typefaces paired after the fact. */
-  --font-display: "Source Serif 4", Georgia, serif;
-  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
-  --font-mono: "Source Code Pro", ui-monospace, monospace;
+  /* Fraunces (display, big serif headlines) + Space Grotesk (everything
+     else — body, UI, and what used to be a separate mono face) — see
+     index.html for the Google Fonts <link>. */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-mono: "Space Grotesk", ui-monospace, monospace;
 
-  /* ---- Radii ---- */
-  --r-sm: 8px;
+  /* ---- Radii — chunkier, poster-style ---- */
+  --r-sm: 10px;
   --r-md: 14px;
-  --r-lg: 22px;
+  --r-lg: 18px;
   --r-pill: 999px;
 
-  /* ---- Shadows ---- */
-  --shadow-sm: 0 1px 2px rgba(35, 39, 51, 0.05);
-  --shadow-md: 0 6px 20px -6px rgba(35, 39, 51, 0.14);
-  --shadow-lg: 0 16px 40px -12px rgba(35, 39, 51, 0.22);
+  /* ---- Shadows — flat offset "stamped" shadows instead of soft blur ---- */
+  --shadow-sm: 3px 3px 0 var(--shadow-color);
+  --shadow-md: 5px 5px 0 var(--shadow-color);
+  --shadow-lg: 8px 8px 0 var(--shadow-color);
+  --shadow-color: rgba(33, 28, 22, 0.2);
 
   /* ---- Motion ---- */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -56,4 +63,74 @@
   /* ---- Layout ---- */
   --container: 1180px;
   --nav-h: 72px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sky: #ff7a49;
+    --sky-light: #ffb08c;
+    --sky-dark: #e2502a;
+    --sky-deep: #ffb08c;
+
+    --sand: #5fc9ae;
+    --sand-deep: #9fe4d1;
+
+    --clay: #d9a876;
+    --clay-deep: #e8c49c;
+
+    --ink: #f3ecda;
+    --ink-soft: #c7bda3;
+    --ink-faint: #998f78;
+    --paper: #1c1811;
+    --surface: #262016;
+    --surface-sunken: #332b1d;
+    --border: rgba(243, 236, 218, 0.18);
+    --border-strong: #f3ecda;
+
+    --success: #5fc9ae;
+    --success-bg: #163229;
+    --warning: #d9a876;
+    --warning-bg: #332a18;
+    --danger: #ff7a62;
+    --danger-bg: #3a1d17;
+
+    --shadow-color: rgba(0, 0, 0, 0.55);
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --sky: #ff7a49;
+  --sky-light: #ffb08c;
+  --sky-dark: #e2502a;
+  --sky-deep: #ffb08c;
+
+  --sand: #5fc9ae;
+  --sand-deep: #9fe4d1;
+
+  --clay: #d9a876;
+  --clay-deep: #e8c49c;
+
+  --ink: #f3ecda;
+  --ink-soft: #c7bda3;
+  --ink-faint: #998f78;
+  --paper: #1c1811;
+  --surface: #262016;
+  --surface-sunken: #332b1d;
+  --border: rgba(243, 236, 218, 0.18);
+  --border-strong: #f3ecda;
+
+  --success: #5fc9ae;
+  --success-bg: #163229;
+  --warning: #d9a876;
+  --warning-bg: #332a18;
+  --danger: #ff7a62;
+  --danger-bg: #3a1d17;
+
+  --shadow-color: rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
 }

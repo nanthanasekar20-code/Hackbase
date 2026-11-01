@@ -30,7 +30,11 @@ involved, real-world impact, uniqueness, and portfolio value. This is
 deliberately NOT a resume upload/parsing feature — it's an estimate of a
 project's portfolio value, independent of any individual user.
 
-Run as: python scripts/enrich_resume_value.py [--force] [--batch-size N]
+Run as: python scripts/enrich_resume_value.py [--force] [--batch-size N] [--status]
+
+--status prints current coverage (total / fully scored / partially
+scored / unscored) and exits without calling Gemini — see
+status_report()/print_status_report() below.
 
 Idempotent by default: problems that already have ALL NINE score fields
 set are skipped (see is_fully_scored() below), so re-running after
@@ -57,7 +61,7 @@ import logging
 from pathlib import Path
 
 from app.core.tracking import RESUME_VALUE_ENRICHMENT_EXPERIMENT, track_run
-from app.rag.gemini_client import generate_json, get_gemini_model
+from app.rag.gemini_client import GeminiUnavailableError, generate_json, get_gemini_model
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -197,6 +201,43 @@ def _chunks(items: list, size: int):
         yield items[start : start + size]
 
 
+def status_report(problems: list[dict] | None = None) -> dict:
+    """Coverage snapshot: how many problems are fully scored (all nine
+    fields), only partially scored (some but not all — e.g. the "original
+    three" fields from before novelty_score etc. existed, see
+    is_fully_scored()'s docstring), or not scored at all. Reads whatever's
+    already on data/processed/problems.json and does not call Gemini —
+    for `--status`, a quick on-demand progress check without digging
+    through logs. Takes `problems` directly (rather than always reading
+    PROCESSED_PATH itself) so enrich() can report an up-to-date count
+    after a run without re-reading the file it just wrote."""
+    if problems is None:
+        if not PROCESSED_PATH.exists():
+            raise FileNotFoundError(f"{PROCESSED_PATH} does not exist — run `python scripts/build_corpus.py` first.")
+        problems = json.loads(PROCESSED_PATH.read_text(encoding="utf-8"))
+
+    total = len(problems)
+    fully_scored = sum(1 for p in problems if is_fully_scored(p))
+    unscored = sum(1 for p in problems if all(p.get(field) is None for field in SCORE_FIELDS))
+    partially_scored = total - fully_scored - unscored
+    return {
+        "total": total,
+        "fully_scored": fully_scored,
+        "partially_scored": partially_scored,
+        "unscored": unscored,
+    }
+
+
+def print_status_report(problems: list[dict] | None = None) -> None:
+    report = status_report(problems)
+    remaining = report["partially_scored"] + report["unscored"]
+    print(f"Total problems:      {report['total']}")
+    print(f"Fully scored (9/9):  {report['fully_scored']}")
+    print(f"Partially scored:    {report['partially_scored']}")
+    print(f"Unscored:            {report['unscored']}")
+    print(f"Remaining to enrich: {remaining}")
+
+
 def enrich(force: bool = False, batch_size: int = DEFAULT_BATCH_SIZE) -> int:
     if not PROCESSED_PATH.exists():
         raise FileNotFoundError(
@@ -216,6 +257,7 @@ def enrich(force: bool = False, batch_size: int = DEFAULT_BATCH_SIZE) -> int:
     logger.info("enriching %d/%d problem(s) in batches of %d", len(todo), len(problems), batch_size)
 
     scored = 0
+    stopped_early = False
     with track_run(
         RESUME_VALUE_ENRICHMENT_EXPERIMENT,
         params={"batch_size": batch_size, "force": force, "total_problems": len(problems), "todo_count": len(todo)},
@@ -224,13 +266,33 @@ def enrich(force: bool = False, batch_size: int = DEFAULT_BATCH_SIZE) -> int:
         for batch_index, batch in enumerate(_chunks(todo, batch_size)):
             expected_ids = {p["id"] for p in batch}
             prompt = _build_batch_prompt(batch)
-            # This is an offline batch job (not the interactive /plan
-            # endpoint), and a large multi-problem JSON response can take
-            # longer than the 15s/10s defaults tuned for interactive use —
-            # especially on a smaller model. Give it real time to finish
-            # rather than shrinking the batch and spending extra real
-            # Gemini calls just to fit a deadline meant for a live request.
-            raw_text = generate_json(model, prompt, timeout=60, retry_timeout=55)
+            try:
+                # This is an offline batch job (not the interactive /plan
+                # endpoint), and a large multi-problem JSON response can
+                # take longer than the 15s/10s defaults tuned for
+                # interactive use — especially on a smaller model. Give it
+                # real time to finish rather than shrinking the batch and
+                # spending extra real Gemini calls just to fit a deadline
+                # meant for a live request.
+                raw_text = generate_json(model, prompt, timeout=60, retry_timeout=55)
+            except GeminiUnavailableError as exc:
+                # Typically the free-tier daily quota running out mid-run —
+                # expected and designed-for, not a crash: every batch
+                # before this one is already checkpointed below, this
+                # batch's problems were never marked scored so they stay
+                # correctly "todo", and the next run's is_fully_scored()
+                # filter picks up exactly here without re-charging a
+                # quota call for anything already scored. Stop cleanly
+                # instead of letting this propagate into an unhandled
+                # traceback.
+                logger.warning(
+                    "stopping early after %d/%d scored this run (%d remain): %s",
+                    scored, len(todo), len(todo) - scored, exc,
+                )
+                run.set_tag("stopped_reason", "gemini_unavailable")
+                stopped_early = True
+                break
+
             scores_by_id = _parse_batch_response(raw_text, expected_ids)
             for problem_id, scores in scores_by_id.items():
                 by_id[problem_id].update(scores)
@@ -248,8 +310,11 @@ def enrich(force: bool = False, batch_size: int = DEFAULT_BATCH_SIZE) -> int:
             run.log_metric("scored_so_far", scored, step=batch_index)
 
         run.log_metric("total_scored", scored)
+        run.set_tag("stopped_early", str(stopped_early))
 
     logger.info("wrote %d newly-scored problem(s) back to %s", scored, PROCESSED_PATH)
+    if stopped_early:
+        logger.info("%d problem(s) still need enrichment — re-run this script later to continue", len(todo) - scored)
     return scored
 
 
@@ -295,5 +360,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--force", action="store_true", help="re-score every problem, even already-scored ones")
     parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE)
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="print current scoring coverage (total/fully/partially/unscored) and exit — never calls Gemini",
+    )
     args = parser.parse_args()
-    enrich(force=args.force, batch_size=args.batch_size)
+    if args.status:
+        print_status_report()
+    else:
+        enrich(force=args.force, batch_size=args.batch_size)

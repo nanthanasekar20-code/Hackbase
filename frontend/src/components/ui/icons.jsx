@@ -248,3 +248,16 @@ export function IconSparkle(props) {
     </svg>
   );
 }
+
+export function IconDice(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="9" cy="9" r="1.3" fill="currentColor" />
+      <circle cx="15" cy="9" r="1.3" fill="currentColor" />
+      <circle cx="9" cy="15" r="1.3" fill="currentColor" />
+      <circle cx="15" cy="15" r="1.3" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.3" fill="currentColor" />
+    </svg>
+  );
+}

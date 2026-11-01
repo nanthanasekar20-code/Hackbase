@@ -4,11 +4,13 @@ import SearchBar from "../components/ui/SearchBar.jsx";
 import Chip from "../components/ui/Chip.jsx";
 import Button from "../components/ui/Button.jsx";
 import ProblemCard from "../components/problem/ProblemCard.jsx";
+import GumballMachine from "../components/home/GumballMachine.jsx";
 import EmptyState from "../components/ui/EmptyState.jsx";
 import ErrorState from "../components/ui/ErrorState.jsx";
 import { SkeletonCard } from "../components/ui/Skeleton.jsx";
 import { IconSparkle, IconArrowRight, IconRefresh } from "../components/ui/icons.jsx";
 import { searchHackathons, getRandomProblems, getLiveHackathons } from "../api/client.js";
+import { cacheProblem } from "../hooks/useProjects.js";
 import styles from "./Home.module.css";
 
 const EXAMPLES = [
@@ -70,7 +72,13 @@ export default function Home() {
     searchHackathons(FEATURED_QUERY, 6)
       .then((data) => {
         if (cancelled) return;
-        const next = { status: "done", results: data?.results || [] };
+        const results = data?.results || [];
+        // Without this, opening a Featured card in a new tab (or landing
+        // on /problem/:id after a refresh) has nothing to fall back on
+        // once React Router's location.state isn't there, and shows "We
+        // couldn't find that problem" for a problem that's right there.
+        results.forEach(cacheProblem);
+        const next = { status: "done", results };
         featuredCache = next;
         setFeatured(next);
       })
@@ -113,7 +121,9 @@ export default function Home() {
     setRefreshing(true);
     try {
       const data = await getRandomProblems(6);
-      const next = { status: "done", results: data?.problems || [] };
+      const results = data?.problems || [];
+      results.forEach(cacheProblem); // same "new tab / refresh" fallback as the default query above
+      const next = { status: "done", results };
       featuredCache = next; // so this survives navigating away and back (see featuredCache above)
       setFeatured(next);
     } catch {
@@ -240,6 +250,8 @@ export default function Home() {
             </div>
           )}
         </section>
+
+        <GumballMachine />
       </div>
     </main>
   );

@@ -1,14 +1,13 @@
-/* "Experimental Intelligence Lab" pass — see
-   src/styles/experimental-lab.css for the token/color foundation. The
-   color scope itself is toggled on document.body (see the useEffect in
-   Discover.jsx) so it also reaches the navbar; this file only adds the
-   actual paper-texture background image to this page's own <main>. */
+/* Arcade pass — this page used to carry its own blue watercolor-paper
+   photo background (via .paperBg) plus a separate "Experimental
+   Intelligence Lab" violet color scope; both are retired now that the
+   whole app shares one Arcade theme (see tokens.css and
+   src/styles/experimental-lab.css) — a photo texture in a different hue
+   family would fight the cream/orange/teal palette everywhere else.
+   .paperBg is kept as a class name (still applied in Discover.jsx) but
+   now just sits on the same --paper cream every other page uses. */
 
 .paperBg {
-  background-image: url("../assets/backgrounds/discover-paper-texture.jpg");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
   background-color: var(--paper);
 }
 
@@ -147,7 +146,7 @@
   align-items: start;
   padding: 32px 0 32px 24px;
   border-bottom: 1px solid var(--border);
-  border-left: 3px solid var(--lab-violet);
+  border-left: 3px solid var(--sky);
   cursor: pointer;
   /* A translucent paper backdrop — the photo texture behind it is busy
      enough to hurt legibility of the title/summary text without one. */
@@ -219,7 +218,7 @@
   font-weight: 800;
   font-size: 1.7rem;
   line-height: 1;
-  color: var(--lab-lime);
+  color: var(--sand-deep);
 }
 
 /* Resume/portfolio value — called out bigger and bolder than Match%,

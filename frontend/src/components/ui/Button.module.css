@@ -3,19 +3,26 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1.5px solid transparent;
+  border: 2.5px solid var(--border-strong);
   border-radius: var(--r-pill);
   font-family: var(--font-body);
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
+  box-shadow: var(--shadow-sm);
   transition: transform var(--fast) var(--ease), background var(--fast) var(--ease),
     border-color var(--fast) var(--ease), color var(--fast) var(--ease),
     box-shadow var(--fast) var(--ease);
   user-select: none;
 }
 
-.btn:active {
-  transform: translateY(1px);
+.btn:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--shadow-color);
 }
 
 .btn:disabled {
@@ -49,16 +56,16 @@
   font-size: 1.02rem;
 }
 
-/* variants */
+/* variants — two solid-fill accents (primary = orange, accent = teal),
+   matching the Arcade palette's two committed accent colors. */
 .primary {
-  background: var(--ink);
+  background: var(--sky);
   color: var(--paper);
-  border-color: var(--ink);
+  border-color: var(--border-strong);
 }
 
-.primary:hover {
-  background: var(--sky-deep);
-  border-color: var(--sky-deep);
+.primary:hover:not(:disabled) {
+  background: var(--sky-dark);
 }
 
 .secondary {
@@ -67,7 +74,7 @@
   border-color: var(--border-strong);
 }
 
-.secondary:hover {
+.secondary:hover:not(:disabled) {
   border-color: var(--sky);
   color: var(--sky-deep);
 }
@@ -76,30 +83,31 @@
   background: transparent;
   color: var(--ink-soft);
   border-color: transparent;
+  box-shadow: none;
 }
 
-.ghost:hover {
+.ghost:hover:not(:disabled) {
   background: var(--surface-sunken);
   color: var(--ink);
+  transform: none;
 }
 
 .accent {
-  background: var(--sky);
+  background: var(--sand);
   color: var(--paper);
-  border-color: var(--sky);
+  border-color: var(--border-strong);
 }
 
-.accent:hover {
-  background: var(--sky-deep);
-  border-color: var(--sky-deep);
+.accent:hover:not(:disabled) {
+  background: var(--sand-deep);
 }
 
 .danger {
   background: transparent;
   color: var(--danger);
-  border-color: var(--danger-bg);
+  border-color: var(--danger);
 }
 
-.danger:hover {
+.danger:hover:not(:disabled) {
   background: var(--danger-bg);
 }

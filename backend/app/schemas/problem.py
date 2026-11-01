@@ -13,7 +13,17 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 
 # Keep in sync with the `source` column comment on app.models.hackathon.Hackathon.
-VALID_SOURCES = {"sih", "devpost", "campus", "unstop", "hackerearth", "government", "article"}
+VALID_SOURCES = {
+    "sih",
+    "devpost",
+    "campus",
+    "unstop",
+    "hackerearth",
+    "government",
+    "article",
+    "kaggle",
+    "nasa_spaceapps",
+}
 
 
 class RawProblem(BaseModel):

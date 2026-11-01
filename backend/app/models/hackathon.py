@@ -9,7 +9,7 @@ class Hackathon(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
-    source = Column(String, nullable=False)   # sih | devpost | campus | unstop | hackerearth | government
+    source = Column(String, nullable=False)   # sih | devpost | campus | unstop | hackerearth | government | article | kaggle | nasa_spaceapps
     problem_statement = Column(Text)
     category = Column(String)
     url = Column(String)

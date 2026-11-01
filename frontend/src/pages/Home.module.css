@@ -22,8 +22,6 @@
 
 .accent {
   color: var(--sky-deep);
-  background-image: linear-gradient(transparent 64%, var(--sky-light) 64%);
-  padding: 0 2px;
 }
 
 .lead {

@@ -13,7 +13,14 @@ import json
 import pytest
 
 import scripts.enrich_resume_value as enrich_module
-from scripts.enrich_resume_value import SCORE_FIELDS, _build_batch_prompt, _parse_batch_response, is_fully_scored
+from app.rag.gemini_client import GeminiUnavailableError
+from scripts.enrich_resume_value import (
+    SCORE_FIELDS,
+    _build_batch_prompt,
+    _parse_batch_response,
+    is_fully_scored,
+    status_report,
+)
 
 PROBLEM_A = {
     "id": "sih:p1",
@@ -203,6 +210,75 @@ def test_enrich_one_backfills_a_partially_scored_problem(tmp_path, monkeypatch):
     assert written["novelty_score"] == 4.0
     for field in SCORE_FIELDS:
         assert written[field] is not None
+
+
+def test_enrich_stops_cleanly_on_quota_exhaustion_without_losing_earlier_batches(tmp_path, monkeypatch):
+    """Regression test: a Gemini quota/rate-limit error partway through a
+    run (GeminiUnavailableError, raised after gemini_client.py's own
+    retries give up) must not propagate as an unhandled exception. The
+    batch(es) completed before the error stay checkpointed, the batch
+    that hit the error is left untouched (still correctly "todo" for the
+    next run — never half-written), and enrich() returns normally with
+    however many it managed to score."""
+    problem_c = {**PROBLEM_A, "id": "sih:p3", "title": "Third Problem"}
+    processed_path = tmp_path / "problems.json"
+    processed_path.write_text(json.dumps([PROBLEM_A, PROBLEM_B, problem_c]), encoding="utf-8")
+    monkeypatch.setattr(enrich_module, "PROCESSED_PATH", processed_path)
+    monkeypatch.setattr(enrich_module, "get_gemini_model", lambda: object())
+
+    calls = {"count": 0}
+
+    def fake_generate_json(model, prompt, **kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            return json.dumps([{"id": "sih:p1", **_full_scores(resume_value_score=8.0)}])
+        raise GeminiUnavailableError("Gemini call failed after retrying for ~55s: 429 Resource exhausted")
+
+    monkeypatch.setattr(enrich_module, "generate_json", fake_generate_json)
+
+    scored = enrich_module.enrich(batch_size=1)
+
+    assert scored == 1  # only the first batch succeeded before the quota error
+    written = {p["id"]: p for p in json.loads(processed_path.read_text(encoding="utf-8"))}
+    assert written["sih:p1"]["resume_value_score"] == 8.0  # checkpointed before the error
+    assert is_fully_scored(written["sih:p1"]) is True
+    # Neither later problem was touched — still correctly "todo", not
+    # half-written, so the next run picks them up without re-charging a
+    # quota call for sih:p1.
+    assert is_fully_scored(written["sih:p2"]) is False
+    assert is_fully_scored(written["sih:p3"]) is False
+    assert all(written["sih:p2"].get(field) is None for field in SCORE_FIELDS)
+
+
+def test_status_report_breaks_down_full_partial_and_unscored():
+    fully = {**PROBLEM_A, **_full_scores()}
+    partially = {**PROBLEM_B, "resume_value_score": 8.0, "industry_relevance_score": 7.0, "technical_depth_score": 9.0}
+    unscored = {**PROBLEM_A, "id": "sih:p3"}
+
+    report = status_report([fully, partially, unscored])
+
+    assert report == {"total": 3, "fully_scored": 1, "partially_scored": 1, "unscored": 1}
+
+
+def test_enrich_scores_a_problem_from_a_brand_new_source_with_no_extra_wiring(tmp_path, monkeypatch):
+    """Regression test: enrich() filters purely on is_fully_scored(), with
+    no source allow-list anywhere in the path — a problem from a source
+    that didn't exist when this script was written (e.g. a newly-added
+    scraper) must still enter the same scoring queue automatically."""
+    new_source_problem = {**PROBLEM_A, "source": "a_brand_new_scraper_source"}
+    processed_path = tmp_path / "problems.json"
+    processed_path.write_text(json.dumps([new_source_problem]), encoding="utf-8")
+    monkeypatch.setattr(enrich_module, "PROCESSED_PATH", processed_path)
+    monkeypatch.setattr(enrich_module, "get_gemini_model", lambda: object())
+
+    fake_response = json.dumps([{"id": "sih:p1", **_full_scores(resume_value_score=7.5)}])
+    monkeypatch.setattr(enrich_module, "generate_json", lambda model, prompt, **kwargs: fake_response)
+
+    scored = enrich_module.enrich()
+
+    assert scored == 1
+    written = json.loads(processed_path.read_text(encoding="utf-8"))[0]
+    assert written["resume_value_score"] == 7.5
 
 
 def test_enrich_writes_all_nine_scores_back_with_mocked_gemini_call(tmp_path, monkeypatch):

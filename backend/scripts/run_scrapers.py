@@ -24,10 +24,18 @@ from pathlib import Path
 from app.scrapers.sih_scraper import SIHScraper
 from app.scrapers.unstop_scraper import UnstopScraper
 from app.scrapers.hackerearth_scraper import HackerEarthScraper
+from app.scrapers.kaggle_scraper import KaggleScraper
+from app.scrapers.nasa_spaceapps_scraper import NasaSpaceAppsScraper
 
 RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 
-SCRAPERS = [SIHScraper(), UnstopScraper(), HackerEarthScraper()]
+SCRAPERS = [
+    SIHScraper(),
+    UnstopScraper(),
+    HackerEarthScraper(),
+    KaggleScraper(),
+    NasaSpaceAppsScraper(),
+]
 
 
 def main():

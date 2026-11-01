@@ -4,6 +4,7 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import Home, { __resetFeaturedCacheForTests } from "./Home.jsx";
 import { searchHackathons, getRandomProblems, getLiveHackathons } from "../api/client.js";
+import { getCachedProblem } from "../hooks/useProjects.js";
 
 vi.mock("../api/client.js", () => ({
   searchHackathons: vi.fn(),
@@ -202,5 +203,42 @@ describe("Home — Featured survives navigating away and back", () => {
     // Lets the remount's own getLiveHackathons effect settle before the
     // test ends, so its state update doesn't land outside any act() scope.
     await screen.findByText("Problem A");
+  });
+});
+
+describe("Home — Featured results are cached for Problem Details", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    __resetFeaturedCacheForTests();
+    localStorage.clear();
+    getLiveHackathons.mockResolvedValue({ count: 0, hackathons: [] });
+  });
+
+  it("caches the default Featured query's results, so opening one in a new tab still finds it", async () => {
+    // Regression test for a real bug: Home never cached Featured's
+    // results, so ProblemDetails had nothing to fall back on once React
+    // Router's location.state wasn't available (a new tab, or
+    // /problem/:id loaded directly) — "We couldn't find that problem"
+    // for one that's right there. Discover.jsx already did this on every
+    // fetch; Home was a gap too.
+    searchHackathons.mockResolvedValue({ results: [PROBLEM_A] });
+
+    renderHome();
+    await screen.findByText("Problem A");
+
+    expect(getCachedProblem("a")).toEqual(expect.objectContaining({ id: "a", title: "Problem A" }));
+  });
+
+  it("caches a Refresh's results too, not just the default query's", async () => {
+    searchHackathons.mockResolvedValue({ results: [PROBLEM_A] });
+    const randomProblem = { id: "z", title: "Random Problem Z", source: "devpost", summary: "Summary Z" };
+    getRandomProblems.mockResolvedValue({ problems: [randomProblem] });
+
+    renderHome();
+    await screen.findByText("Problem A");
+    await userEvent.click(screen.getByRole("button", { name: /refresh/i }));
+    await screen.findByText("Random Problem Z");
+
+    expect(getCachedProblem("z")).toEqual(expect.objectContaining({ id: "z", title: "Random Problem Z" }));
   });
 });

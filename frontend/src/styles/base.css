@@ -14,14 +14,30 @@ html {
 body {
   margin: 0;
   background: var(--paper);
-  background-image: radial-gradient(circle at 12% 0%, rgba(129, 166, 198, 0.09), transparent 45%),
-    radial-gradient(circle at 100% 20%, rgba(243, 227, 208, 0.5), transparent 40%);
-  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* Faint halftone dot texture, on its own fixed layer behind everything
+   rather than body's own background-image. At full strength the dots
+   would render in the same --ink color as the text sitting on top of
+   them, fighting for contrast (a real bug this exact pattern caused in
+   the Arcade playground — see playground/shared.css's own comment on
+   it) — low opacity keeps it a quiet backdrop instead. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(var(--ink) 1px, transparent 1.4px);
+  background-size: 20px 20px;
+  background-position: -7px -7px;
+  opacity: 0.12;
+  pointer-events: none;
 }
 
 img,
@@ -59,10 +75,11 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 900;
   line-height: 1.12;
   margin: 0 0 0.5em;
   letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
 h1 {

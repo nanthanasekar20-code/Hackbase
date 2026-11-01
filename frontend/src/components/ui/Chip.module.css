@@ -2,13 +2,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 7px 15px;
   border-radius: var(--r-pill);
   background: var(--surface);
-  border: 1px solid var(--border-strong);
+  border: 1.5px solid var(--border-strong);
   color: var(--ink-soft);
   font-size: 0.86rem;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1;
 }
 
@@ -20,7 +20,7 @@
 .clickable:hover {
   border-color: var(--sky);
   color: var(--sky-deep);
-  background: rgba(129, 166, 198, 0.08);
+  background: var(--surface-sunken);
 }
 
 .active {

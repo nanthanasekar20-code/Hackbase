@@ -37,6 +37,9 @@ en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_
 requests==2.32.3
 beautifulsoup4==4.12.3
 playwright==1.47.0
+# Kaggle's official API client (see app/scrapers/live_kaggle_scraper.py) —
+# only used once KAGGLE_USERNAME/KAGGLE_KEY are configured in .env.
+kaggle==2.2.5
 
 # Scheduling (live hackathon recommendations — see
 # app/services/refresh_job.py, wired up in app/main.py)

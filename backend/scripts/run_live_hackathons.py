@@ -10,10 +10,13 @@ scripts. Just hackathon name + source + official link, refreshed
 periodically, no database table.
 
 Each scraper runs via run_safe() (see app/scrapers/base_scraper.py), so
-one failing/blocked source (see live_unstop_scraper.py,
-live_dorahacks_scraper.py, live_kaggle_scraper.py for the three that are
-genuinely blocked by anti-bot protection) never stops the others —
-same graceful-degradation philosophy as the existing scrapers.
+one failing/blocked source (see live_unstop_scraper.py and
+live_dorahacks_scraper.py for the two still genuinely blocked by
+anti-bot protection) never stops the others — same graceful-degradation
+philosophy as the existing scrapers. live_kaggle_scraper.py uses
+Kaggle's official API instead and degrades the same way, just for a
+different reason (optional KAGGLE_USERNAME/KAGGLE_KEY credentials, see
+.env.example, rather than being blocked outright).
 
 Run as: python scripts/run_live_hackathons.py
 """
@@ -54,6 +57,9 @@ SCRAPERS = [
     # the rest, so this stays a no-op list entry rather than special-cased.
     LiveUnstopScraper(),
     LiveDoraHacksScraper(),
+    # Uses Kaggle's official API, gated on optional KAGGLE_USERNAME/
+    # KAGGLE_KEY credentials — returns [] (also via run_safe()) until
+    # those are configured, see live_kaggle_scraper.py.
     LiveKaggleScraper(),
 ]
 

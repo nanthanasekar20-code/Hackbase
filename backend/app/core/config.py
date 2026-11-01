@@ -50,6 +50,14 @@ class Settings(BaseSettings):
     # new release.
     sih_year: str = "2025"
 
+    # Year suffix for the NASA Space Apps Challenge release currently
+    # holding real challenge statements (see
+    # app/scrapers/nasa_spaceapps_scraper.py) — spaceappschallenge.org
+    # publishes each year's challenges at /{year}/challenges/. Bump this
+    # once a newer year's listing is actually populated (verified live:
+    # /2026/challenges/ is still empty as of this writing).
+    nasa_spaceapps_year: str = "2025"
+
     # --- Live refresh (see app/services/refresh_job.py) ---
     # When enabled, a background job runs scripts/run_scrapers.py ->
     # scripts/build_corpus.py -> app/rag/index_builder.py on a timer
@@ -83,6 +91,15 @@ class Settings(BaseSettings):
     smtp_use_tls: bool = True
     # Where the emailed reset link points — the Vite dev server by default.
     frontend_base_url: str = "http://localhost:5173"
+
+    # --- Kaggle (Live Hackathons — Kaggle Competitions, see
+    # app/scrapers/live_kaggle_scraper.py) ---
+    # Blank means "not configured": that scraper then leaves this source
+    # empty (an honest, logged no-op) instead of guessing at credentials.
+    # Get a real token at https://www.kaggle.com/settings -> API -> Create
+    # New Token, which downloads a kaggle.json with both values.
+    kaggle_username: str = ""
+    kaggle_key: str = ""
 
 
 settings = Settings()

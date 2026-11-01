@@ -1,0 +1,379 @@
+<title>HackBase Demo v2</title>
+<style>
+  :root{
+    --bg:#f3ecda;
+    --surface:#fffbf1;
+    --surface-2:#ece2c8;
+    --ink:#211c16;
+    --ink-soft:#5c5445;
+    --accent:#e2502a;
+    --accent-ink:#fff6ec;
+    --accent-2:#2e6e62;
+    --accent-2-ink:#ecfbf6;
+    --line:#211c16;
+    --shadow:rgba(33,28,22,0.18);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1c1811; --surface:#262016; --surface-2:#332b1d;
+      --ink:#f3ecda; --ink-soft:#c7bda3;
+      --accent:#ff7a49; --accent-ink:#241208;
+      --accent-2:#5fc9ae; --accent-2-ink:#07211a;
+      --line:#f3ecda; --shadow:rgba(0,0,0,0.5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1c1811; --surface:#262016; --surface-2:#332b1d;
+    --ink:#f3ecda; --ink-soft:#c7bda3;
+    --accent:#ff7a49; --accent-ink:#241208;
+    --accent-2:#5fc9ae; --accent-2-ink:#07211a;
+    --line:#f3ecda; --shadow:rgba(0,0,0,0.5);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background: var(--bg); color: var(--ink);
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    padding-inline: 20px; padding-block: 28px;
+    display:flex; flex-direction:column; gap:44px;
+    max-width: 960px; margin: 0 auto;
+  }
+
+  h1,h2,h3{ font-family:"Fraunces","Georgia",serif; font-weight:900; margin:0; text-wrap:balance; }
+
+  .note{
+    font-size:12.5px; color: var(--ink-soft);
+    border:1.5px dashed var(--ink-soft); border-radius:10px;
+    padding:10px 14px; line-height:1.5;
+  }
+
+  /* ---------- Sticky nav ---------- */
+  .topbar{
+    position:sticky; top: env(safe-area-inset-top, 0px);
+    z-index:10;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    flex-wrap:wrap;
+    background: var(--bg);
+    padding-block: 10px;
+    border-bottom: 2.5px solid var(--line);
+  }
+  .brand{ font-family:"Fraunces",serif; font-weight:900; font-size:19px; }
+  .brand span{ color: var(--accent); }
+  nav.mock{ display:flex; flex-wrap:wrap; gap:6px; }
+  nav.mock a{
+    font-size:12.5px; font-weight:700;
+    padding:8px 14px; border:2px solid var(--line); border-radius:10px;
+    background: var(--surface); color: var(--ink); text-decoration:none;
+    box-shadow: 3px 3px 0 var(--shadow);
+    transition: transform .12s ease;
+  }
+  nav.mock a:hover{ transform: translate(-1px,-1px); }
+  nav.mock a.active{ background: var(--accent); color: var(--accent-ink); }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative; border:3px solid var(--line); border-radius:18px; overflow:hidden;
+    background: radial-gradient(circle, var(--accent) 1.6px, transparent 1.7px) 0 0/16px 16px, var(--surface);
+  }
+  .hero::before{
+    content:""; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 50% 0%, transparent 0%, var(--surface) 72%);
+    pointer-events:none;
+  }
+  .circuit{ position:absolute; width:150px; height:150px; color: var(--accent-2); opacity:0.55; pointer-events:none; }
+  .circuit.tl{ top:-10px; left:-10px; }
+  .circuit.br{ bottom:-10px; right:-10px; transform: rotate(180deg); }
+  .star{ position:absolute; color: var(--accent); pointer-events:none; }
+  .hero-inner{ position:relative; padding: 44px 28px 36px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px; }
+  .eyebrow{
+    font-size:11.5px; letter-spacing:.18em; text-transform:uppercase;
+    color: var(--accent-2-ink); background: var(--accent-2);
+    border:2px solid var(--line); border-radius:999px; padding:5px 14px; font-weight:700;
+  }
+  .wordmark{ font-size: clamp(52px, 13vw, 104px); line-height:0.86; letter-spacing:-0.01em; color: var(--ink); -webkit-text-stroke: 1.5px var(--line); }
+  .wordmark span{ color: var(--accent); }
+  .tagline{ font-size:15px; color: var(--ink-soft); max-width:46ch; }
+  .hero-tags{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:4px; }
+  .hero-tags span{
+    font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    border:2px solid var(--line); border-radius:8px; padding:5px 10px; background: var(--surface);
+  }
+
+  /* ---------- Section heading ---------- */
+  .section-head{ display:flex; align-items:baseline; gap:10px; }
+  .section-head h2{ font-size:26px; }
+  .section-head .num{
+    font-family:"Fraunces",serif; font-weight:900; font-size:15px;
+    color: var(--accent-ink); background: var(--accent);
+    border:2px solid var(--line); border-radius:999px;
+    width:26px; height:26px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .section-sub{ color:var(--ink-soft); font-size:13.5px; margin-top:6px; }
+
+  /* ---------- Picker machine ---------- */
+  .machine{
+    border:3px solid var(--line); border-radius:20px; background: var(--surface); padding:26px;
+    display:flex; flex-direction:column; align-items:center; gap:18px;
+    box-shadow: 6px 6px 0 var(--shadow);
+  }
+  .glass{
+    width:100%; max-width:460px; border:3px solid var(--line); border-radius:16px;
+    background: var(--surface-2); padding:22px 18px; text-align:center;
+    display:flex; flex-direction:column; gap:8px; min-height:112px; justify-content:center;
+  }
+  .glass .domain-pill{
+    align-self:center; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    border:2px solid var(--line); border-radius:8px; padding:4px 10px; background: var(--accent-2); color: var(--accent-2-ink);
+  }
+  .glass .pick-title{ font-family:"Fraunces",serif; font-weight:800; font-size:19px; }
+  .glass .hint{ font-size:12px; color: var(--ink-soft); }
+  .spin-btn{
+    font-family:"Fraunces",serif; font-weight:800; font-size:15px;
+    border:2.5px solid var(--line); border-radius:999px; padding:12px 26px;
+    background: var(--accent); color: var(--accent-ink); cursor:pointer;
+    box-shadow: 4px 4px 0 var(--shadow);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .spin-btn:hover{ transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow); }
+  .spin-btn:active{ transform: translate(0,0); box-shadow: 2px 2px 0 var(--shadow); }
+  .spin-btn:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+
+  /* ---------- Problem cards ---------- */
+  .cards{ display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap:16px; }
+  .card{
+    border:2.5px solid var(--line); border-radius:14px; background: var(--surface); padding:16px;
+    display:flex; flex-direction:column; gap:10px; box-shadow: 4px 4px 0 var(--shadow);
+  }
+  .card .tag-row{ display:flex; gap:6px; flex-wrap:wrap; }
+  .tag{ font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; border:1.5px solid var(--line); border-radius:7px; padding:3px 8px; }
+  .tag.domain{ background: var(--accent-2); color: var(--accent-2-ink); }
+  .tag.new{ background: var(--accent); color: var(--accent-ink); }
+  .card h3{ font-size:17px; line-height:1.22; }
+  .card .desc{ font-size:12.5px; color: var(--ink-soft); line-height:1.5; }
+  .score-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:auto; padding-top:6px; border-top:1.5px dashed var(--ink-soft); }
+  .score{ font-size:11px; color: var(--ink-soft); display:flex; gap:4px; align-items:center; }
+  .score b{ color: var(--ink); font-family:"Fraunces",serif; }
+
+  /* ---------- Domains ---------- */
+  .domains{ display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
+  .domain-card{
+    border:2.5px solid var(--line); border-radius:14px; background: var(--surface);
+    padding:16px; display:flex; flex-direction:column; gap:6px; align-items:flex-start;
+    box-shadow: 4px 4px 0 var(--shadow); cursor:pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .domain-card:hover{ transform: translate(-2px,-2px); box-shadow:6px 6px 0 var(--shadow); }
+  .domain-card .emoji{ font-size:22px; }
+  .domain-card h3{ font-size:15px; }
+  .domain-card .count{ font-size:11.5px; color: var(--ink-soft); }
+
+  /* ---------- Live hackathons ---------- */
+  .hackathons{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px; }
+  .hack-card{
+    border:2.5px solid var(--line); border-radius:14px; background: var(--surface); padding:16px;
+    display:flex; flex-direction:column; gap:10px; box-shadow: 4px 4px 0 var(--shadow);
+  }
+  .hack-card .source{
+    align-self:flex-start; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    border:1.5px solid var(--line); border-radius:7px; padding:3px 8px; background: var(--surface-2);
+  }
+  .hack-card h3{ font-size:16px; }
+  .hack-card .meta{ font-size:12px; color: var(--ink-soft); }
+  .hack-card a.go{
+    margin-top:auto; align-self:flex-start; font-size:12px; font-weight:700;
+    text-decoration:none; color: var(--accent-ink); background: var(--accent);
+    border:2px solid var(--line); border-radius:8px; padding:6px 12px;
+  }
+
+  /* ---------- Footer ---------- */
+  footer{
+    border-top: 3px solid var(--line); padding-top:22px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .footer-top{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+  .footer-brand{ font-family:"Fraunces",serif; font-weight:900; font-size:20px; }
+  .footer-brand span{ color: var(--accent); }
+  .footer-links{ display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; }
+  .footer-links a{ color: var(--ink); text-decoration:none; font-weight:600; }
+  .footer-links a:hover{ text-decoration:underline; }
+  .footer-bottom{ font-size:11.5px; color: var(--ink-soft); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .spin-btn, nav.mock a, .domain-card{ transition:none; }
+  }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,800;0,9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap">
+
+<div class="note">
+  Demo v2 — a fuller mock of the site (hero through footer), still just a playground file living outside your real frontend/backend. Everything below is example data, not wired to your real API.
+</div>
+
+<div class="topbar">
+  <span class="brand">HACK<span>BASE</span></span>
+  <nav class="mock">
+    <a href="#discover" class="active">Discover</a>
+    <a href="#domains">Domains</a>
+    <a href="#hackathons">Live Hackathons</a>
+    <a href="#">My Projects</a>
+    <a href="#">Profile</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <svg class="circuit tl" viewBox="0 0 150 150" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+    <path d="M8 60 L8 24 L44 24 L44 8"/><path d="M8 90 L30 90 L30 120 L60 120"/><path d="M8 60 L26 60 L26 42"/>
+    <circle cx="44" cy="8" r="4" fill="currentColor"/><circle cx="60" cy="120" r="4" fill="currentColor"/>
+    <circle cx="26" cy="42" r="4" fill="currentColor"/><circle cx="8" cy="90" r="4" fill="currentColor"/>
+    <rect x="70" y="2" width="10" height="10"/><rect x="2" y="104" width="10" height="10"/>
+  </svg>
+  <svg class="circuit br" viewBox="0 0 150 150" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+    <path d="M8 60 L8 24 L44 24 L44 8"/><path d="M8 90 L30 90 L30 120 L60 120"/><path d="M8 60 L26 60 L26 42"/>
+    <circle cx="44" cy="8" r="4" fill="currentColor"/><circle cx="60" cy="120" r="4" fill="currentColor"/>
+    <circle cx="26" cy="42" r="4" fill="currentColor"/><circle cx="8" cy="90" r="4" fill="currentColor"/>
+    <rect x="70" y="2" width="10" height="10"/><rect x="2" y="104" width="10" height="10"/>
+  </svg>
+  <svg class="star" style="top:14%; left:12%; width:22px; height:22px; transform:rotate(-12deg);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z"/></svg>
+  <svg class="star" style="top:10%; right:14%; width:16px; height:16px; transform:rotate(18deg);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z"/></svg>
+  <svg class="star" style="bottom:16%; right:20%; width:13px; height:13px; transform:rotate(8deg);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z"/></svg>
+  <svg class="star" style="bottom:20%; left:16%; width:15px; height:15px; transform:rotate(-20deg);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z"/></svg>
+  <div class="hero-inner">
+    <span class="eyebrow">Problem Discovery Platform</span>
+    <h1 class="wordmark">HACK<span>BASE</span></h1>
+    <p class="tagline">Scout real hackathon problem statements, scored and sorted, before anyone else does.</p>
+    <div class="hero-tags"><span>600+ problems</span><span>9 scoring signals</span><span>Live hackathon feed</span></div>
+  </div>
+</section>
+
+<section id="discover">
+  <div class="section-head"><span class="num">1</span><h2>Spin for one</h2></div>
+  <p class="section-sub">The "random problem" idea from our chat, mocked up as an arcade-style picker.</p>
+  <div class="machine">
+    <div class="glass" id="glass">
+      <span class="domain-pill" id="glassDomain">AI / ML</span>
+      <span class="pick-title" id="glassTitle">Press spin to pick a problem</span>
+      <span class="hint">example data — not your real corpus</span>
+    </div>
+    <button class="spin-btn" id="spinBtn">🎲 Spin the picker</button>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><span class="num">2</span><h2>Problem cards</h2></div>
+  <p class="section-sub">Same fields your real cards show — domain, scores, "new" tag — restyled.</p>
+  <div class="cards">
+    <article class="card">
+      <div class="tag-row"><span class="tag domain">IoT</span><span class="tag new">New</span></div>
+      <h3>Smart irrigation for small farms</h3>
+      <p class="desc">Sensor-driven watering system for water-scarce regions, built for low-cost hardware.</p>
+      <div class="score-row"><span class="score">Resume value <b>8.4</b></span><span class="score">Feasibility <b>7.9</b></span></div>
+    </article>
+    <article class="card">
+      <div class="tag-row"><span class="tag domain">Healthcare</span></div>
+      <h3>Early sepsis risk flagging</h3>
+      <p class="desc">Vitals-trend model that flags deterioration risk hours before a human would.</p>
+      <div class="score-row"><span class="score">Novelty <b>9.1</b></span><span class="score">Dataset <b>6.5</b></span></div>
+    </article>
+    <article class="card">
+      <div class="tag-row"><span class="tag domain">FinTech</span><span class="tag new">New</span></div>
+      <h3>Micro-savings nudges for gig workers</h3>
+      <p class="desc">Behavioral-nudge app that auto-rounds gig income into a savings pool.</p>
+      <div class="score-row"><span class="score">Social impact <b>8.8</b></span><span class="score">Competition <b>6.2</b></span></div>
+    </article>
+  </div>
+</section>
+
+<section id="domains">
+  <div class="section-head"><span class="num">3</span><h2>Browse by domain</h2></div>
+  <p class="section-sub">Click a domain on the real site and it filters Discover — here it's just a static mock.</p>
+  <div class="domains">
+    <div class="domain-card"><span class="emoji">🤖</span><h3>AI / ML</h3><span class="count">142 problems</span></div>
+    <div class="domain-card"><span class="emoji">🏥</span><h3>Healthcare</h3><span class="count">61 problems</span></div>
+    <div class="domain-card"><span class="emoji">🌾</span><h3>AgriTech</h3><span class="count">38 problems</span></div>
+    <div class="domain-card"><span class="emoji">💳</span><h3>FinTech</h3><span class="count">54 problems</span></div>
+    <div class="domain-card"><span class="emoji">📡</span><h3>IoT</h3><span class="count">47 problems</span></div>
+    <div class="domain-card"><span class="emoji">🌍</span><h3>Climate</h3><span class="count">29 problems</span></div>
+  </div>
+</section>
+
+<section id="hackathons">
+  <div class="section-head"><span class="num">4</span><h2>Live hackathons</h2></div>
+  <p class="section-sub">What a fuller Live Hackathons page could feel like, styled the same way.</p>
+  <div class="hackathons">
+    <article class="hack-card">
+      <span class="source">Devfolio</span>
+      <h3>HackNorth 2026</h3>
+      <span class="meta">Registration closes in 6 days</span>
+      <a class="go" href="#">View hackathon →</a>
+    </article>
+    <article class="hack-card">
+      <span class="source">Unstop</span>
+      <h3>Smart India Hackathon</h3>
+      <span class="meta">Internal rounds open now</span>
+      <a class="go" href="#">View hackathon →</a>
+    </article>
+    <article class="hack-card">
+      <span class="source">HackerEarth</span>
+      <h3>Build for Bharat</h3>
+      <span class="meta">Starts in 12 days</span>
+      <a class="go" href="#">View hackathon →</a>
+    </article>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <span class="footer-brand">HACK<span>BASE</span></span>
+    <div class="footer-links">
+      <a href="#discover">Discover</a>
+      <a href="#domains">Domains</a>
+      <a href="#hackathons">Live Hackathons</a>
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Built by a B.Tech final-year student, still shipping.</span>
+    <span>Demo footer — edit freely, this is just a mock.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var sample = [
+    ["AI / ML", "Crop disease ID from a phone photo"],
+    ["Web3", "Transparent donation tracker for relief funds"],
+    ["Healthcare", "Early sepsis risk flagging"],
+    ["EdTech", "Offline-first revision app for patchy networks"],
+    ["IoT", "Smart irrigation for small farms"],
+    ["FinTech", "Micro-savings nudges for gig workers"],
+    ["Accessibility", "Sign-language captioning for live calls"],
+    ["Climate", "Hyperlocal flood-risk alerts via SMS"]
+  ];
+  var btn = document.getElementById("spinBtn");
+  var titleEl = document.getElementById("glassTitle");
+  var domainEl = document.getElementById("glassDomain");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var spinning = false;
+
+  btn.addEventListener("click", function(){
+    if (spinning) return;
+    spinning = true; btn.disabled = true;
+    var ticks = reduceMotion ? 1 : 14, delay = 70, i = 0;
+    function tick(){
+      var pick = sample[Math.floor(Math.random() * sample.length)];
+      domainEl.textContent = pick[0]; titleEl.textContent = pick[1];
+      i++;
+      if (i < ticks) { setTimeout(tick, delay + i * 8); }
+      else { spinning = false; btn.disabled = false; }
+    }
+    tick();
+  });
+})();
+</script>
