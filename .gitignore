@@ -18,6 +18,12 @@ data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+# The deployed backend (Render) builds straight from this repo, so the
+# app's actual content has to be committed or production starts empty.
+# The Chroma index is NOT committed — it's rebuilt at deploy time from
+# problems.json (python -m app.rag.index_builder in Render's build command).
+!data/processed/problems.json
+!data/processed/live_hackathons.json
 mlflow/*
 !mlflow/.gitkeep
 # The pair above is root-anchored (contains a "/", so git only matches it
@@ -38,3 +44,5 @@ Thumbs.db
 # Editors
 .vscode/
 .idea/
+
+.vercel

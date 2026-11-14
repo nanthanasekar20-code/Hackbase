@@ -1,0 +1,291 @@
+{
+  "updated_at": "2026-10-26T04:25:08.494980+00:00",
+  "count": 44,
+  "per_source_counts": {
+    "devpost": 9,
+    "mlh": 0,
+    "angelhack": 3,
+    "devfolio": 10,
+    "taikai": 20,
+    "hackerearth": 0,
+    "hack2skill": 2,
+    "unstop": 0,
+    "dorahacks": 0,
+    "kaggle": 0
+  },
+  "hackathons": [
+    {
+      "title": "Health Hackathon 3.0",
+      "source": "devpost",
+      "url": "https://health-hackathon-3-0.devpost.com/",
+      "deadline": "Oct 24 - 31, 2026",
+      "fetched_at": "2026-10-26T04:24:24.123992+00:00"
+    },
+    {
+      "title": "Codex x TwitchCon Hackathon",
+      "source": "devpost",
+      "url": "https://twitchcon-codex.devpost.com/",
+      "deadline": "Oct 23 - Nov 02, 2026",
+      "fetched_at": "2026-10-26T04:24:24.123992+00:00"
+    },
+    {
+      "title": "UGREEN Hackathon 2026 on AI NAS",
+      "source": "devpost",
+      "url": "https://ugreenhackathon.devpost.com/",
+      "deadline": "Oct 22 - Nov 16, 2026",
+      "fetched_at": "2026-10-26T04:24:24.123992+00:00"
+    },
+    {
+      "title": "Buksi SITE (STEM Innovation & Talent Expo) 2026 - ONLY FOR BUKIT SION STUDENTS",
+      "source": "devpost",
+      "url": "https://buksi-site-2026.devpost.com/",
+      "deadline": "Oct 24 - 30, 2026",
+      "fetched_at": "2026-10-26T04:24:24.123992+00:00"
+    },
+    {
+      "title": "Engage 6.0 – Code with AI Hackathon",
+      "source": "devpost",
+      "url": "https://engage6.devpost.com/",
+      "deadline": "Oct 21 - 27, 2026",
+      "fetched_at": "2026-10-26T04:24:24.123992+00:00"
+    },
+    {
+      "title": "FUSE Society Blueprint 2026",
+      "source": "devpost",
+      "url": "https://fuse-society-blueprint-2026.devpost.com/",
+      "deadline": "Oct 24 - 31, 2026",
+      "fetched_at": "2026-10-26T04:24:24.123992+00:00"
+    },
+    {
+      "title": "Green Shift Hacks",
+      "source": "devpost",
+      "url": "https://green-shift-hacks.devpost.com/",
+      "deadline": "Oct 18 - Nov 17, 2026",
+      "fetched_at": "2026-10-26T04:24:24.123992+00:00"
+    },
+    {
+      "title": "Hack to the Future",
+      "source": "devpost",
+      "url": "https://hack-to-the-missing-future-ai.devpost.com/",
+      "deadline": "Oct 20 - 27, 2026",
+      "fetched_at": "2026-10-26T04:24:24.123992+00:00"
+    },
+    {
+      "title": "NextSpark Hacks",
+      "source": "devpost",
+      "url": "https://nextspark-hacks.devpost.com/",
+      "deadline": "Oct 21 - 26, 2026",
+      "fetched_at": "2026-10-26T04:24:24.123992+00:00"
+    },
+    {
+      "title": "Building with IBM Bob Hackathon",
+      "source": "angelhack",
+      "url": "https://angelhack.com/event/building-with-ibm-bob/",
+      "fetched_at": "2026-10-26T04:24:27.300973+00:00"
+    },
+    {
+      "title": "Databricks AppQuest",
+      "source": "angelhack",
+      "url": "https://angelhack.com/event/databricks-appquest/",
+      "fetched_at": "2026-10-26T04:24:27.300973+00:00"
+    },
+    {
+      "title": "Hedera Incubator 2026",
+      "source": "angelhack",
+      "url": "https://angelhack.com/event/hedera-incubator-2026/",
+      "fetched_at": "2026-10-26T04:24:27.300973+00:00"
+    },
+    {
+      "title": "Surat Hack 2026",
+      "source": "devfolio",
+      "url": "https://surat-hack-2026.devfolio.co/",
+      "fetched_at": "2026-10-26T04:24:37.596689+00:00"
+    },
+    {
+      "title": "AgentVerse",
+      "source": "devfolio",
+      "url": "https://agentverse.devfolio.co/",
+      "fetched_at": "2026-10-26T04:24:37.596689+00:00"
+    },
+    {
+      "title": "TUM Blockchain & AI Hackathon",
+      "source": "devfolio",
+      "url": "https://tum.devfolio.co/",
+      "fetched_at": "2026-10-26T04:24:37.596689+00:00"
+    },
+    {
+      "title": "Lean In Hacks 8.0",
+      "source": "devfolio",
+      "url": "https://lean-in-hacks-8.devfolio.co/",
+      "fetched_at": "2026-10-26T04:24:37.596689+00:00"
+    },
+    {
+      "title": "Hacknauts 2.0",
+      "source": "devfolio",
+      "url": "https://hacknauts26.devfolio.co/",
+      "fetched_at": "2026-10-26T04:24:37.596689+00:00"
+    },
+    {
+      "title": "hackodisha-6.0",
+      "source": "devfolio",
+      "url": "https://hackodisha-6a.devfolio.co/",
+      "fetched_at": "2026-10-26T04:24:37.596689+00:00"
+    },
+    {
+      "title": "THE BIG HACK 2.0",
+      "source": "devfolio",
+      "url": "https://the-big-hack-2.devfolio.co/",
+      "fetched_at": "2026-10-26T04:24:37.596689+00:00"
+    },
+    {
+      "title": "haxfinity",
+      "source": "devfolio",
+      "url": "https://haxfinity.devfolio.co/",
+      "fetched_at": "2026-10-26T04:24:37.596689+00:00"
+    },
+    {
+      "title": "GeNarrative Clash",
+      "source": "devfolio",
+      "url": "https://genarrative-clash.devfolio.co/",
+      "fetched_at": "2026-10-26T04:24:37.596689+00:00"
+    },
+    {
+      "title": "DevNexus 2.0",
+      "source": "devfolio",
+      "url": "https://devnexus2.devfolio.co/",
+      "fetched_at": "2026-10-26T04:24:37.596689+00:00"
+    },
+    {
+      "title": "SpaceXAI Digital Transformation Lab",
+      "source": "taikai",
+      "url": "https://taikai.network/en/spacexai/hackathons/spacexai-digital-transformation-lab/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "CASSINI Hackathons - Space for Peace and Resilience",
+      "source": "taikai",
+      "url": "https://taikai.network/en/cassinihackathons/hackathons/space-for-peace-resilience/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Hack4Guimarães 2035",
+      "source": "taikai",
+      "url": "https://taikai.network/en/cmguimaraes/hackathons/hack4guimaraes2035/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Build for the Future Hackathon 2026",
+      "source": "taikai",
+      "url": "https://taikai.network/en/outsystems/hackathons/build-for-the-future-2026/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Veles Hack 2026",
+      "source": "taikai",
+      "url": "https://taikai.network/en/eclipse-foundation/hackathons/veles-hack-2026/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Hackathon by PaxRocket",
+      "source": "taikai",
+      "url": "https://taikai.network/en/paxlegal/hackathons/LegalTech/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Porto Hack Santos 2026",
+      "source": "taikai",
+      "url": "https://taikai.network/en/instituto-amigu/hackathons/porto-hack-santos-2026/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "AI Hacker House Equinox Edition",
+      "source": "taikai",
+      "url": "https://taikai.network/en/layerx/hackathons/ai-hacker-house-equinox-edition/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Common S3nse",
+      "source": "taikai",
+      "url": "https://taikai.network/en/cryptocanal/hackathons/commons3nse/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "AI Hacker House Solstice Edition",
+      "source": "taikai",
+      "url": "https://taikai.network/en/layerx/hackathons/ai-hacker-house-solstice-edition/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Ctrl Shift Hackathon 2026",
+      "source": "taikai",
+      "url": "https://taikai.network/en/napulETH/hackathons/ctrl-shift-2026/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "CopernicusLAC Panamá Hackathon 2026 - Seguridad alimentaria",
+      "source": "taikai",
+      "url": "https://taikai.network/en/copernicuslac-panama/hackathons/seguridad-alimentaria-2026/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Hackanation 2026",
+      "source": "taikai",
+      "url": "https://taikai.network/en/TokenNation/hackathons/Hackanation2026/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Maritime Security Hackathon",
+      "source": "taikai",
+      "url": "https://taikai.network/en/talent-garden/hackathons/maritime-security-challenge/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Fixathon",
+      "source": "taikai",
+      "url": "https://taikai.network/en/impacthubporto/hackathons/fixathon/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Shift APPens 2026",
+      "source": "taikai",
+      "url": "https://taikai.network/en/shift-appens/hackathons/shift-appens-2026/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "CASSINI Hackathons - Space for Water",
+      "source": "taikai",
+      "url": "https://taikai.network/en/cassinihackathons/hackathons/space-for-water/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Agents Day Braga 2026",
+      "source": "taikai",
+      "url": "https://taikai.network/en/layerx/hackathons/agents-day-braga-2026/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "EUDIS Defence Hackathon and Mentoring Spring 2026 - Romania",
+      "source": "taikai",
+      "url": "https://taikai.network/en/eudisROMANIA/hackathons/2026spring/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "EUDIS Defence Hackathon and Mentoring Spring 2026 - CZECH REPUBLIC",
+      "source": "taikai",
+      "url": "https://taikai.network/en/eudisCZECH/hackathons/2026spring/",
+      "fetched_at": "2026-10-26T04:24:47.641467+00:00"
+    },
+    {
+      "title": "Future Health Digital Innovation Challenge",
+      "source": "hack2skill",
+      "url": "https://hack2skill.com/event/futurehealthchallenge?utm_source=hack2skill&utm_medium=homepage",
+      "fetched_at": "2026-10-26T04:25:08.489458+00:00"
+    },
+    {
+      "title": "Builder Pop-Up",
+      "source": "hack2skill",
+      "url": "https://hack2skill.com/event/builderpopup/",
+      "fetched_at": "2026-10-26T04:25:08.489458+00:00"
+    }
+  ]
+}
